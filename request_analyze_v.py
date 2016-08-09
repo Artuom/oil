@@ -23,19 +23,24 @@ def request(client, pdu):
         usr_obj = subscriber.Subscriber(pdu.source_addr)  # first request. object of subscriber class
         list_of_objects[str(pdu.source_addr)] = usr_obj
 
-    if pdu.command == "deliver_sm" and pdu.ussd_service_op is not None and pdu.ussd_service_op != 19 \
+    if pdu.ussd_service_op is not None and pdu.ussd_service_op != 19 and pdu.ussd_service_op != 33 \
             and pdu.short_message == service_key:
         print "First request" + " " + str(pdu.ussd_service_op)
         response(client, pdu.source_addr, pdu.destination_addr, usr_obj, pdu.user_message_reference)
-    elif pdu.command == "deliver_sm" and (
-                    pdu.ussd_service_op is not None and int(pdu.ussd_service_op) != 19) and \
-            pdu.short_message != service_key and pdu.ussd_service_op != '33':
+
+    elif (pdu.ussd_service_op is not None and int(pdu.ussd_service_op) != 19) and pdu.ussd_service_op != '33' \
+            and pdu.short_message != service_key:
         print "Not first request" + "  " + str(pdu.ussd_service_op)
         response(client, pdu.source_addr, pdu.destination_addr, usr_obj, pdu.user_message_reference, pdu.short_message)
-    elif pdu.command == "deliver_sm" and (
-                    pdu.ussd_service_op is not None and int(pdu.ussd_service_op) == 19):  # final confirmation
+
+    elif pdu.ussd_service_op is not None and (int(pdu.ussd_service_op) == 19 or int(pdu.ussd_service_op) == 33):
         print "Third request while final confirmation" + " " + str(pdu.ussd_service_op)
-        del list_of_objects[str(pdu.source_addr)]
+        usr_obj.__del__()
+        try:
+            del list_of_objects[str(pdu.source_addr)]
+        except AttributeError:
+            pass
+
     else:  # rejected from subscriber side, session ending
         print "Reject ", ' ', pdu.message_state
         try:
