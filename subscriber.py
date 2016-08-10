@@ -51,7 +51,7 @@ class Subscriber:
             "01121": "",
             "0113": "Priobresti shans na priz 2: puteshestvie v Yaponiy na 2x(500 ballov)?\n1.Da"
             }
-        if len(self.level) == 1:
+        if len(self.level) == 1 and self.level is '01':
             # level = 0
             text = "1. Upravlenie kartoi\n2. Actyal'nye akcii\n3. Ceny na toplivo\n"
             sop = 0x02
