@@ -27,8 +27,8 @@ def start_services():
             if prid_dict[ussdinstance]:
                 print '{} is already up.'.format(ussdinstance[:-3])
         except KeyError:
-            to_start = 'nohup python {} >> /dev/null &'.format(ussdinstance)
-            print 'Starting {}. With pid {}.'.format(ussdinstance[:-3], to_start.split(' ')[1])
+            to_start = commands.getoutput('nohup python {} >> /dev/null &'.format(ussdinstance))
+            print 'Starting {}. With pid {}.'.format(ussdinstance[:-3], to_start)
 
 
 if __name__ == '__main__':
