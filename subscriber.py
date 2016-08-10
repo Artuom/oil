@@ -58,9 +58,9 @@ class Subscriber:
         elif len(self.level) == 2:
             # level = 0x
             my_str_cards = ''
-            if len(self.subscriber_cards_dict) == 1 and self.level is '01':
+            if len(self.subscriber_cards_dict) == 1 and self.level == '01':
                 self.level_up(1)
-
+                # level = 011 - 1st card id
                 request_card_id = int(self.level[2])
                 # card = self.subscriber_cards_dict[request_card_id]
                 try:
@@ -74,22 +74,32 @@ class Subscriber:
                     sop = 0x03
                 return text, sop
 
-            else:
-                pass
+            elif self.level == '02':
+                current_date = datetime.today().strftime('%m%Y')
+                my_str_lots = ''
+                for lot in self.dict_of_lots.values():
+                    my_str_lots += '{}\n'.format(lot)
+
+                text = '{}\n{}'.format(current_date, my_str_lots)
+                sop = 0x03
+                return text, sop
+
+            elif self.level == '03':
+                text = 'You will receive an sms. Currently unavailable.'
+                sop = 0x03
+                return text, sop
+
             for card in self.subscriber_cards_dict:
                 my_str_cards += '{}:{}\n'.format(card, self.subscriber_cards_dict[card])
             if my_str_cards == '':
                 my_str_cards = 'U vas net dostupnih kart.'
-            my_str_lots = ''
-            for lot in self.dict_of_lots.values():
-                my_str_lots += '{}\n'.format(lot)
-            current_date = datetime.today().strftime('%m%Y')
             dict_choice = {
                 '01': "Viberete vashu kartu:\n{}".format(my_str_cards),
-                '02': '{}\n{}'.format(current_date, my_str_lots),
-                '03': 'You will receive an sms. Currently unavailable.'
+                # '02': '{}\n{}'.format(current_date, my_str_lots),
+                # '03': 'You will receive an sms. Currently unavailable.'
             }
-            text = dict_choice[self.level]
+            # text = dict_choice[self.level]
+            text = "Viberete vashu kartu:\n{}".format(my_str_cards)
             sop = 0x02
 
         elif len(self.level) == 3:  # card selection
@@ -100,7 +110,7 @@ class Subscriber:
             try:
                 card = self.subscriber_cards_dict[request_card_id]  # card number
                 # card_info = db_interaction.card_information(card)
-                text = '{}\n1. Podrobnaya info po karte\n2. Priobresti shans na priz 1\n3. Priobresti shans na priz 2'.\
+                text = '{}\n1. Podrobnaya info po karte\n2. Priobresti shans na priz 1\n3. Priobresti shans na priz 2'. \
                     format(card)
                 sop = 0x02
             except IndexError:
