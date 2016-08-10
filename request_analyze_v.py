@@ -35,6 +35,9 @@ def request(client, pdu):
 
     elif pdu.ussd_service_op is not None and (int(pdu.ussd_service_op) == 19 or int(pdu.ussd_service_op) == 33):
         print "Third request while final confirmation" + " " + str(pdu.ussd_service_op)
+        if int(pdu.ussd_service_op) == 33:
+            response(client, pdu.source_addr, pdu.destination_addr, usr_obj, pdu.user_message_reference,
+                     'final')
         usr_obj.__del__()
         try:
             del list_of_objects[str(pdu.source_addr)]
@@ -60,6 +63,10 @@ def response(client, msisdn=0, src_addr=0, usr_obj=0, user_message_reference=Non
         usr_obj.level_up(0)
     elif srctext != "":
         usr_obj.level_up(srctext)
+    elif srctext == 'final':
+        text = ''
+        ussd_service_op = 0x32
+        ussd_submit.submit(client, msisdn, src_addr, ussd_service_op, user_message_reference, text)
     else:
         text = "Vash vibor prinyat"
         ussd_service_op = 0x03
