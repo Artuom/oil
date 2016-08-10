@@ -15,4 +15,7 @@ for pr in program:
     except:
         pass
 
-print prid_dict
+
+def stop_services():
+    for prid in prid_dict.values():
+        commands.getoutput("sudo kill -9 " + prid)
