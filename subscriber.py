@@ -154,6 +154,7 @@ class Subscriber:
                     change_result = 1  # error
                 if change_result == 1:  # error
                     text = 'Unknown error. Try later.'
+                    sop = 0x03
                 elif change_result == 0:
                     text = 'Vi priobreli shans na priz {}: {}'.format(chance_id, self.dict_of_lots[chance_id])
             else:
