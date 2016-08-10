@@ -58,6 +58,24 @@ class Subscriber:
         elif len(self.level) == 2:
             # level = 0x
             my_str_cards = ''
+            if len(self.subscriber_cards_dict) == 1:
+                self.level_up(1)
+
+                request_card_id = int(self.level[2])
+                # card = self.subscriber_cards_dict[request_card_id]
+                try:
+                    card = self.subscriber_cards_dict[request_card_id]  # card number
+                    # card_info = db_interaction.card_information(card)
+                    text = '{}\n1. Podrobnaya info po karte\n2. Priobresti shans na priz 1\n3. Priobresti shans na ' \
+                           'priz 2'.format(card)
+                    sop = 0x02
+                except IndexError:
+                    text = 'Unknown error. Try later.'
+                    sop = 0x03
+                return text, sop
+
+            else:
+                pass
             for card in self.subscriber_cards_dict:
                 my_str_cards += '{}:{}\n'.format(card, self.subscriber_cards_dict[card])
             if my_str_cards == '':
@@ -78,10 +96,10 @@ class Subscriber:
             # 01x
             # x = [2] - card id
             request_card_id = int(self.level[2])
-            card = self.subscriber_cards_dict[request_card_id]
+            # card = self.subscriber_cards_dict[request_card_id]
             try:
                 card = self.subscriber_cards_dict[request_card_id]  # card number
-                card_info = db_interaction.card_information(card)
+                # card_info = db_interaction.card_information(card)
                 text = '{}\n1. Podrobnaya info po karte\n2. Priobresti shans na priz 1\n3. Priobresti shans na priz 2'.\
                     format(card)
                 sop = 0x02
@@ -97,15 +115,10 @@ class Subscriber:
             answer = self.level[3]
             card = self.subscriber_cards_dict[request_card_id]  # card number
             card_info = db_interaction.card_information(card)
-	    print card_info
-	    print answer
             if int(answer) == 1:
-		print 'In if == 1'
-		print card_info['status']
                 text = "Status karti {card_info[status]}. Na karte {card_info[score]} ballov\nKuplenih shansov:\n"\
                        "priz 1 - {card_info[lots1]}\npriz 2 - {card_info[lots2]}".format(card_info=card_info)
-		print text	
-		sop = 0x03
+                sop = 0x03
             elif int(answer) != 1:
                 try:
                     text = 'Priobresti shans na priz {}\n1.Da\n2.Net'.format(self.dict_of_lots[int(answer) - 1])
@@ -114,7 +127,6 @@ class Subscriber:
                     text = 'Unknown error. Try later.'
                     sop = 0x03
             else:
-		print 'In else'
                 text = 'Unknown error. Try later.'
                 sop = 0x03
 
