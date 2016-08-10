@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import commands, os, string
+import commands, os, string, sys
 
 
 program = ['ussd_life.py', 'ussd_mts.py', 'ussd_velcom.py']
@@ -19,3 +19,20 @@ for pr in program:
 def stop_services():
     for prid in prid_dict.values():
         commands.getoutput("sudo kill -9 " + prid)
+
+
+def start_services():
+    for ussdinstance in program:
+        try:
+            if prid_dict[ussdinstance]:
+                print '{} is already up.'.format(ussdinstance[:-3])
+        except KeyError:
+            to_start = 'nohup python {} >> /dev/null &'.format(ussdinstance)
+            print 'Starting {}. With pid {}.'.format(ussdinstance[:-3], to_start.split(' ')[1])
+
+
+if __name__ == '__main__':
+    if sys.argv[1] == 'stop':
+        stop_services()
+    if sys.argv[1] == 'start':
+        start_services()
