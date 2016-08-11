@@ -27,14 +27,17 @@ def start_services():
             if prid_dict[ussdinstance]:
                 print '{} is already up.'.format(ussdinstance[:-3])
         except KeyError:
-            str_to_start = 'nohup python {} >> /dev/null &'.format(ussdinstance)
+            str_to_start = 'nohup python {} > /dev/null &'.format(ussdinstance)
             print str_to_start
-            to_start = commands.getoutput(str_to_start)
-            print 'Starting {}. With pid {}.'.format(ussdinstance[:-3], to_start)
+            # to_start = commands.getoutput(str_to_start)
+            # print 'Starting {}. With pid {}.'.format(ussdinstance[:-3], to_start)
 
 
 if __name__ == '__main__':
-    if sys.argv[1] == 'stop':
-        stop_services()
-    if sys.argv[1] == 'start':
+    try:
+        if sys.argv[1] == 'stop':
+            stop_services()
+        if sys.argv[1] == 'start':
+            start_services()
+    except IndexError:
         start_services()
