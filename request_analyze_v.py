@@ -66,8 +66,9 @@ def response(client, msisdn=0, src_addr=0, usr_obj=0, user_message_reference=Non
         usr_obj.level_up(srctext)
     elif srctext == 'final':
         text = ''
-        ussd_service_op = 0x32
+        ussd_service_op = 0x20
         ussd_submit.submit(client, msisdn, src_addr, ussd_service_op, user_message_reference, text)
+        return 1
     else:
         text = "Vash vibor prinyat"
         ussd_service_op = 0x03
