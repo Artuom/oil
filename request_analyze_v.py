@@ -35,7 +35,7 @@ def request(client, pdu):
 
     elif pdu.ussd_service_op is not None and (int(pdu.ussd_service_op) == 19 or int(pdu.ussd_service_op) == 33):
         print "Third request while final confirmation" + " " + str(pdu.ussd_service_op)
-        if int(pdu.ussd_service_op) == 19 and pdu.x1120:
+        if int(pdu.ussd_service_op) == 19 and pdu.velc_notif:
             # '0x1120': 'Belorusneft'
             response(client, pdu.source_addr, pdu.destination_addr, usr_obj, pdu.user_message_reference,
                      'final')
@@ -62,7 +62,7 @@ def response(client, msisdn=0, src_addr=0, usr_obj=0, user_message_reference=Non
     ussd_service_op = 0x02
     if srctext == "":
         usr_obj.level_up(0)
-    elif srctext != "":
+    elif srctext != "" and srctext != 'final':
         usr_obj.level_up(srctext)
     elif srctext == 'final':
         text = ''
