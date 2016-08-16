@@ -25,18 +25,22 @@ def request(client, pdu):
 
     if pdu.ussd_service_op is not None and pdu.ussd_service_op != 19 and pdu.ussd_service_op != 33 \
             and pdu.short_message == service_key:
-        print "First request" + " " + str(pdu.ussd_service_op)
+        print str(pdu.source_addr) + '|' + str(pdu.short_message) + '|' + str(pdu.ussd_service_op) + '|' + str(
+            usr_obj.level)
         response(client, pdu.source_addr, pdu.destination_addr, usr_obj, pdu.user_message_reference)
 
     elif (pdu.ussd_service_op is not None and int(pdu.ussd_service_op) != 19) and pdu.ussd_service_op != '33' \
             and pdu.short_message != service_key:
-        print "Not first request" + "  " + str(pdu.ussd_service_op)
+        print str(pdu.source_addr) + '|' + str(pdu.short_message) + '|' + str(pdu.ussd_service_op) + '|' + str(
+            usr_obj.level)
         response(client, pdu.source_addr, pdu.destination_addr, usr_obj, pdu.user_message_reference, pdu.short_message)
 
     elif pdu.ussd_service_op is not None and (int(pdu.ussd_service_op) == 19 or int(pdu.ussd_service_op) == 33):
-        print "Third request while final confirmation" + " " + str(pdu.ussd_service_op)
+        print str(pdu.source_addr) + '|' + str(pdu.short_message) + '|' + str(pdu.ussd_service_op) + '|' + str(
+            usr_obj.level)
         if int(pdu.ussd_service_op) == 19 and pdu.velc_notif:
             # '0x1120': 'Belorusneft'
+            print "Rejected by " + pdu.source_addr
             response(client, pdu.source_addr, pdu.destination_addr, usr_obj, pdu.user_message_reference,
                      'final')
         usr_obj.__del__()
@@ -46,7 +50,7 @@ def request(client, pdu):
             pass
 
     else:  # rejected from subscriber side, session ending
-        print "Reject ", ' ', pdu.message_state
+        print "Rejected by " + pdu.source_addr
         try:
             usr_obj.__del__()
             del list_of_objects[str(pdu.source_addr)]
@@ -73,7 +77,7 @@ def response(client, msisdn=0, src_addr=0, usr_obj=0, user_message_reference=Non
         text = "Vash vibor prinyat"
         ussd_service_op = 0x03
 
-    print "Уровень ветки: %s" % usr_obj.level
+
 
     try:
         # text = level[usr_obj.level]

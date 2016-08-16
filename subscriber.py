@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 
-import db_interaction
+import db_interaction_zaglushka
 from datetime import datetime
 
 list_of_objects = []
@@ -11,9 +11,9 @@ class Subscriber:
     def __init__(self, msisdn):
         self.level = ""
         # self.dict_of_lots = None
-        self.dict_of_lots = db_interaction.current_lots()
+        self.dict_of_lots = db_interaction_zaglushka.current_lots()
         self.msisdn = msisdn
-        self.subscriber_cards_dict = db_interaction.msisdn_cards(self.msisdn)  # выборка из БД
+        self.subscriber_cards_dict = db_interaction_zaglushka.msisdn_cards(self.msisdn)  # выборка из БД
         # self.card_number = card_info["number"]  # card number
         # self.card_points = card_info["points"]  # value of points on the card
 
@@ -29,16 +29,16 @@ class Subscriber:
             return None
         else:
             new_value = self.card_points - value
-            db_interaction.change_info(self.msisdn, new_value)
+            db_interaction_zaglushka.change_info(self.msisdn, new_value)
         return new_value
     
     def current_lots(self):
         # receives dict of lots
         # {1: '1:Krossover Pezho', 2: '2:Poezdka vo Frantsiiu na chempionat Evropy po futbolu na 3-kh'}
-        self.dict_of_lots = db_interaction.current_lots()
+        self.dict_of_lots = db_interaction_zaglushka.current_lots()
 
     def card_info(self, id):
-        card_info = db_interaction.card_information(id)
+        card_info = db_interaction_zaglushka.card_information(id)
     
     def answer_text(self):
         text = None
@@ -124,7 +124,7 @@ class Subscriber:
             request_card_id = int(self.level[2])
             answer = self.level[3]
             card = self.subscriber_cards_dict[request_card_id]  # card number
-            card_info = db_interaction.card_information(card)
+            card_info = db_interaction_zaglushka.card_information(card)
             if int(answer) == 1:
                 text = "Status karti {card_info[status]}. Na karte {card_info[score]} ballov\nKuplenih shansov:\n"\
                        "priz 1 - {card_info[lots1]}\npriz 2 - {card_info[lots2]}".format(card_info=card_info)
@@ -149,7 +149,7 @@ class Subscriber:
             chance_id = int(self.level[3]) - 1  # 1 - info po karte, 2,3 cifri vibora = 1,2 id shansa
             if int(self.level[4]) == 1:  # Otvet - Da
                 try:
-                    change_result = db_interaction.change_info(self.subscriber_cards_dict[request_card_id], chance_id)
+                    change_result = db_interaction_zaglushka.change_info(self.subscriber_cards_dict[request_card_id], chance_id)
                 except Exception:
                     change_result = 1  # error
                 if change_result == 1:  # error
@@ -164,5 +164,6 @@ class Subscriber:
         return text, sop
 
     def __del__(self):
+        print self.msisdn + ' finished'
         del self
-        print "object deleted"
+
