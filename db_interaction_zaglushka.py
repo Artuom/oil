@@ -24,7 +24,7 @@ def msisdn_cards(msisdn):
     #query_str = cur.callfunc('RCD.CHECKPHONE', result, [msisdn])  # return str format '||xxx||yyy||     '
     # {1: '2000000045665', 2: '2000002456650'}
     # subscriber_cards_dict = dict(enumerate([i for i in query_str.rstrip().split('||') if i != ''], 1))
-    subscriber_cards_dict = {1: '2000000045665', 2: '2000002456650'}
+    subscriber_cards_dict = {1: '2000000045665', }  # 2: '2000002456650'
     return subscriber_cards_dict
 
 
@@ -48,7 +48,7 @@ def card_information(card_id):
 def change_info(card_number, lot_id):
     # update subs point value
     # print msisdn, 'in change_info'
-    return "OK"
+    return 0
 
 def current_lots():
     # result = cx_Oracle.FIXED_CHAR

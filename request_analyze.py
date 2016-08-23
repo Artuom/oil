@@ -61,7 +61,10 @@ def response(client, msisdn=0, src_addr=0, usr_obj=0, user_message_reference=Non
     if srctext == "":
         usr_obj.level_up(0)
     elif srctext != "":
-        usr_obj.level_up(srctext)
+        if int(srctext) == 0:
+            usr_obj.level_down()
+        else:
+            usr_obj.level_up(srctext)
     else:
         text = "Vash vibor prinyat"
         ussd_service_op = 0x03

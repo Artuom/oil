@@ -5,9 +5,9 @@ import ussd_submit
 import time
 import subscriber
 import ussd_submit
-import read_json
+# import read_json
 
-level = read_json.read_menus()
+# level = read_json.read_menus()
 
 list_of_objects = None
 usr_obj = 0
@@ -67,7 +67,10 @@ def response(client, msisdn=0, src_addr=0, usr_obj=0, user_message_reference=Non
     if srctext == "":
         usr_obj.level_up(0)
     elif srctext != "" and srctext != 'final':
-        usr_obj.level_up(srctext)
+        if int(srctext) == 0:
+            usr_obj.level_down()
+        else:
+            usr_obj.level_up(srctext)
     elif srctext == 'final':
         text = ''
         ussd_service_op = 0x20
