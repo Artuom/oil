@@ -10,15 +10,19 @@ list_of_objects = []
 class Subscriber:
     def __init__(self, msisdn):
         self.level = ""
-        # self.dict_of_lots = None
-        self.dict_of_lots = db_interaction.current_lots()
+        self.prize_dict = db_interaction.current_lots()  # {1: {}, 2: {}, 3: {}}
         self.msisdn = msisdn
         self.subscriber_cards_dict = db_interaction.msisdn_cards(self.msisdn)  # выборка из БД
-        # self.card_number = card_info["number"]  # card number
-        # self.card_points = card_info["points"]  # value of points on the card
+        # {1: {u'cardcode': u'2000000045665', u'score': u'600', u'id': u'0'}, 2: {u'cardcode': u'2000002456650', u'score': u'400', u'id': u'1'}}
+
 
     def __str__(self):
         return self.msisdn
+
+    def error_msg(self):
+        text = 'Unknown error. Try later!'
+        sop = 0x03
+        return text, sop
 
     def level_up(self, level):
         self.level += str(level)
@@ -45,81 +49,69 @@ class Subscriber:
             new_value = self.card_points - value
             db_interaction.change_info(self.msisdn, new_value)
         return new_value
-    
+
     def current_lots(self):
         # receives dict of lots
         # {1: '1:Krossover Pezho', 2: '2:Poezdka vo Frantsiiu na chempionat Evropy po futbolu na 3-kh'}
-        self.dict_of_lots = db_interaction.current_lots()
+        self.prize_dict = db_interaction.current_lots()  # {1: {}, 2: {}, 3: {}}
 
     def card_info(self, id):
         card_info = db_interaction.card_information(id)
-    
+
     def answer_text(self):
         text = None
-        text_skeleton = {
-            "0": "1. Upravlenie kartoi\n2. Actyal'nye akcii\n3. Ceny na toplivo\n",
-            "01": "Viberete vashu kartu:\n1: 1111\n2:2222",
-            "011": "Na karte 5000 ballov\n1.Podrobnaya info po karte\n2.Priobretenie shansa na priz 1(x500 ballov)\n3.Priobretenie shansa na priz 2(x500 ballov)",
-            "0111": "Status: 1(skidka 5%)\nBally: 1120\nShansy priz 1: 0\nShansy priz 2: 2'",
-            "0112": "Priobresti shans na priz 1: avtomobil' Nissan Kashkai(500 ballov)\n1.Da\n",
-            "01121": "",
-            "0113": "Priobresti shans na priz 2: puteshestvie v Yaponiy na 2x(500 ballov)?\n1.Da"
-            }
+        # first request
+        # *xxx#
         if len(self.level) == 1:
             # level = 0
             text = "1. Upravlenie kartoi\n2. Actyal'nye akcii\n3. Ceny na toplivo\n"
             sop = 0x02
+        # end first request
         elif len(self.level) == 2:
             # level = 0x
             my_str_cards = ''
-            """if len(self.subscriber_cards_dict) == 1 and self.level == '01':
-                self.level_up(1)
-                # level = 011 - 1st card id
-                request_card_id = int(self.level[2])
-                # card = self.subscriber_cards_dict[request_card_id]
-                try:
-                    card = self.subscriber_cards_dict[request_card_id]  # card number
-                    # card_info = db_interaction.card_information(card)
-                    text = '{}\n1. Podrobnaya info po karte\n2. Priobresti shans na priz 1\n3. Priobresti shans na ' \
-                           'priz 2'.format(card)
-                    sop = 0x02
-                except IndexError:
-                    text = 'Unknown error. Try later.'
-                    sop = 0x03
-                return text, sop"""
-
+            # esli karta odna i uroven' zaprosa info po karte, podnyat' level
             if len(self.subscriber_cards_dict) == 1 and self.level == '01':
                 self.level_up(1)
 
-            elif self.level == '02':
-                current_date = datetime.today().strftime('%m%Y')
-                my_str_lots = ''
-                for lot in self.dict_of_lots.values():
-                    my_str_lots += '{}\n'.format(lot)
+            elif len(self.subscriber_cards_dict) != 1 and self.level == '01':
+                if self.subscriber_cards_dict is None:
+                    my_str_cards = 'U vas net dostupnih kart.'
+                    text = "{}".format(my_str_cards)
+                    sop = 0x03
+                else:
+                    for card in self.subscriber_cards_dict:
+                        my_str_cards = ''
+                        for card in self.subscriber_cards_dict:
+                            my_str_cards += '{}: {}\n'.format(card['cardcode'])
+                        text = "Viberete vashu kartu:\n{}".format(my_str_cards)
+                        sop = 0x02
 
+
+            # lots menu *xxx*2#
+            elif self.level == '02':
+                current_date = datetime.today().strftime('%d%m%Y')
+                my_str_lots = ''
+
+
+                for prize in self.prize_dict.values():
+                    n = 1
+                    my_str_lots = '{}:{}\n'.format(n, prize['prizename'])
+                    n += 1
                 text = '{}\n{}\n0 - Nazad'.format(current_date, my_str_lots)
                 sop = 0x02
-                return text, sop
 
+                return text, sop
+            # lots ends
+            #
+            # actions and discounts for fuel
             elif self.level == '03':
                 text = 'You will receive an sms. Currently unavailable.'
                 sop = 0x03
                 return text, sop
 
-            for card in self.subscriber_cards_dict:
-                my_str_cards += '{}:{}\n'.format(card, self.subscriber_cards_dict[card])
-            if my_str_cards == '':
-                my_str_cards = 'U vas net dostupnih kart.'
-            dict_choice = {
-                '01': "Viberete vashu kartu:\n{}".format(my_str_cards),
-                # '02': '{}\n{}'.format(current_date, my_str_lots),
-                # '03': 'You will receive an sms. Currently unavailable.'
-            }
-            # text = dict_choice[self.level]
-            text = "Viberete vashu kartu:\n{}".format(my_str_cards)
-            sop = 0x02
-
-        if len(self.level) == 3:  # card selection
+        # card selection
+        if len(self.level) == 3:
             # 01x
             # x = [2] - card id
             request_card_id = int(self.level[2])
@@ -127,30 +119,56 @@ class Subscriber:
             try:
                 card = self.subscriber_cards_dict[request_card_id]  # card number
                 # card_info = db_interaction.card_information(card)
-                text = '{}\n1. Podrobnaya info po karte\n2. Priobresti shans na priz 1\n3. Priobresti shans na priz 2' \
-                       '\n0 - Nazad'.format(card)
+                # proverka daty
+                if datetime.today().strftime('%d') in xrange(1,4):
+                    text = '{}\n1. Podrobnaya info po karte\nS 1 po 3 chislo mesyaca priobretenie shansov ' \
+                           'ogranicheno. Povtorite popitku posle 3-go chisla.\n0 - Nazad'
+                elif self.prize_dict is None:
+                    text = '{}\n1. Podrobnaya info po karte\nNa danniy moment net akcii\n0 - Nazad'
+                else:
+                    str_prizes = ''
+                    """
+                    for key, value in dict.iteritems():
+                        print '{}:{}'.format(key, value['prizename'])
+                    """
+                    for key, value in self.prize_dict.iteritems():
+                        str_prizes += '{}:{}\n'.format(key, value['prizename'])
+                    text = '{}\n1. Podrobnaya info po karte\n{}0 - Nazad'.format(str_prizes)
                 sop = 0x02
             except IndexError:
                 text = 'Unknown error. Try later.'
                 sop = 0x03
 
-        elif len(self.level) == 4:  # card menu selection
+        # card menu selection
+        elif len(self.level) == 4:
             # 01xy
             # x = [2] - card_id
-            # y = [3] - otvet(info ili priobretenie shansa)
+            # y = [3] - answer(info ili priobretenie shansa)
             request_card_id = int(self.level[2])
             answer = self.level[3]
             card = self.subscriber_cards_dict[request_card_id]  # card number
-            card_info = db_interaction.card_information(card)
             if int(answer) == 1:
-                text = "Status karti {card_info[status]}. Na karte {card_info[score]} ballov\nShansov na"\
-                       "priz 1 - {card_info[lots1]}\nShansov na priz 2 - {card_info[lots2]}\n0 - Nazad".\
-                    format(card_info=card_info)
+                json_card_info = db_interaction.card_information(card)
+                if json_card_info['chance'] == 'none':
+                    chance1, count1 = [0, 0]
+                    chance2, count2 = [0, 0]
+                else:
+                    count1 = json_card_info['chance'][0]['count']
+                    count2 = json_card_info['chance'][1]['count']
+                if json_card_info['discount'] in ('', ' '):
+                    discount = 0
+
+                text = 'Skidka {disc}%\nPriobreteno soput.tovarov: {goods}rub\nBalli: {score}\nShansi priz 1: {first_count}' \
+                      '\nShansi priz 2: {second_count}\n1.Priobresti shans na priz 1\n2.Priobresti shans na priz 2'.format(
+                    disc=discount, first_count=count1, second_count=count2, **json_card_info)
                 sop = 0x02
             elif int(answer) != 1:
                 try:
-                    text = 'Priobresti shans na priz {}\n1.Da\n0.Net'.format(self.dict_of_lots[int(answer) - 1])
-                    sop = 0x02
+                    if datetime.today().strftime('%d') in xrange(1,4) or self.prize_dict is None:
+                        text, sop = self.error_msg()
+                    else:
+                        text = 'Priobresti shans na priz {}\n1.Da\n0.Net'.format(self.prize_dict[int(answer) - 1]['prizename'])
+                        sop = 0x02
                 except IndexError:
                     text = 'Unknown error. Try later.'
                     sop = 0x03
@@ -164,7 +182,7 @@ class Subscriber:
             # y = [3] - otvet(priobretenie shansa, !=1) - id lota
             # z = [3] - podtvergdenie na pokupku shansa po y-1(id shansa)
             request_card_id = int(self.level[2])
-            chance_id = int(self.level[3]) - 1  # 1 - info po karte, 2,3 cifri vibora = 1,2 id shansa
+            chance_id = int(self.level[3]) - 1  # 1 - info po karte, 2,3,4 cifri vibora = 1,2,3 id shansa
             if int(self.level[4]) == 1:  # Otvet - Da
                 try:
                     change_result = db_interaction.change_info(self.subscriber_cards_dict[request_card_id], chance_id)
@@ -175,7 +193,8 @@ class Subscriber:
                     sop = 0x03
                 elif change_result == 0:
                     text = 'Vi priobreli shans na priz {}: {}\n0 - Priobresti shansi'.format(chance_id,
-                                                                                        self.dict_of_lots[chance_id])
+                                                                                             self.prize_dict[
+                                                                                                 chance_id]['prizename'])
             else:
                 text = "Otmeneno pol'zovatelem"
                 sop = 0x03
@@ -185,4 +204,3 @@ class Subscriber:
     def __del__(self):
         print self.msisdn + ' finished'
         del self
-

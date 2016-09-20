@@ -46,11 +46,23 @@ def msisdn_cards(msisdn):
     if unsuccessCount >= 3:
         db_reconnect()
     msisdn = '+{}'.format(str(msisdn))
+
+    """
+    phone = json.loads(a)
+    print phone['cardlist']
+    print dict(enumerate(phone['cardlist'], 1))
+    """
+
     try:
         result = cx_Oracle.FIXED_CHAR
-        query_str = cur.callfunc('RCD.CHECKPHONE', result, [msisdn]) # return str format '||xxx||yyy||     '
+        # cur.callfunc('RCD.CHECKPHONE', result, ['+375295730676'])
+        # {u'date': u'20.09.16', u'phone': u'+375295730676', u'cardlist': [{u'cardcode': u'2000000045665', u'score': u'600', u'id': u'0'}, {u'cardcode': u'2000002456650', u'score': u'400', u'id': u'1'}]}
+        json_cards = json.loads(cur.callfunc('RCD.CHECKPHONE', result, ['+375295730676']).rstrip())
         # {1: '2000000045665', 2: '2000002456650'}
-        subscriber_cards_dict =  dict(enumerate([i for i in query_str.rstrip().split('||') if i != ''], 1))
+        if json_cards['cardlist'] == 'none':
+            subscriber_cards_dict = None
+        else:
+            subscriber_cards_dict =  dict(enumerate(json_cards['cardlist'], 1))
         return subscriber_cards_dict
     except:
         unsuccessCount += 1
@@ -62,16 +74,12 @@ def card_information(card_id):
     # make db request with card id
     # return information about card
     try:
-        my_str = cur.callfunc('RCD.GetCardInfo', cx_Oracle.FIXED_CHAR, [card_id]).rstrip()
-        dict_obj = json.loads([i for i in my_str.split("'") if i != ''][0])
+        json_card_info = json.loads(cur.callfunc('RCD.CARDINFO', cx_Oracle.FIXED_CHAR, [card_id]).rstrip())
         # {u'status': u' ', u'sumgoods': u'0', u'score': u'', u'lots2': u'', u'lots1': u'', u'distype': u'3', u'disvalue':
         # u'0', u'cardcode': u'00010'}
-        for i in dict_obj:
-            if dict_obj[i] == '' or dict_obj[i] == ' ':
-                dict_obj[i] = 0
         # {u'status': 0, u'sumgoods': u'0', u'score': 0, u'lots2': 0, u'lots1': 0, u'distype': u'3', u'disvalue': u'0',
         # u'cardcode': u'00010'}
-        return dict_obj
+        return json_card_info
     except:
         unsuccessCount += 1
         print 'problem while getcardinfo for {}'.format(card_id)
@@ -87,14 +95,17 @@ def current_lots():
     global unsuccessCount
     try:
         result = cx_Oracle.FIXED_CHAR
-        cur_date = '042016'
-        # date = datetime.today().strftime('%m%Y')
-        # cur.callfunc('RCD.LOTS', result, ['042016']).rstrip().decode('cp1251') # return in russian coding cp1251
-        # '1:Krossover Pezho;2:Poezdka vo Frantsiiu na chempionat Evropy po futbolu na 3-kh;' - lots_str
-        lots_str = unidecode(cur.callfunc('RCD.LOTS', result, [cur_date]).rstrip().decode('cp1251'))
-        # {1: '1:Krossover Pezho', 2: '2:Poezdka vo Frantsiiu na chempionat Evropy po futbolu na 3-kh'} - lots_dict
-        lots_dict = dict(enumerate([i for i in lots_str.split(';') if i != ''], 1))
-        return lots_dict
+        date = datetime.today().strftime('%d%m%Y')
+        # '{"date":"20.09.2016 10:29:58","prizelist":[{"prizenum":"1","prizename":"FORD EcoSport (Trend)",' \
+        # '"prizecost":"500"},{"prizenum":"2","prizename":"Kruiz po stranam Karibskogo morya","prizecost":"500"},' \
+        # '{"prizenum":"3","prizename":"Zapravka do polnogo baka","prizecost":"0"}]}'
+        lots_json = json.loads(cur.callfunc('RCD.prizeinfo', result, [date]).rstrip())
+        lots_list = lots_json['prizelist']
+        if lots_list == 'none':
+            prize_dict = None
+        else:
+            prize_dict = dict(enumerate(lots_list, 1))
+        return prize_dict
     except:
         unsuccessCount += 1
-        print 'problem while lots for {}'.format(cur_date)
+        print 'problem while lots for {}'.format(date)
