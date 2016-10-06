@@ -28,7 +28,7 @@ class Subscriber:
         return text, sop
 
     def level_up(self, level):
-        if len(self.level) == 3 and level != 1:
+        if len(self.level) == 3 and int(level) != 1:
             self.level += str(1) + str(int(level) - 1)
         elif len(self.level) == 6:
             self.level = self.level[:-2] + str(level)
@@ -155,8 +155,9 @@ class Subscriber:
             request_card_id = int(self.level[2])
             answer = self.level[3]
             card = self.subscriber_cards_dict[request_card_id]  # card number
+            print 'card ', card['cardcode']
             if int(answer) == 1:
-                json_card_info = db_interaction.card_information(card)
+                json_card_info = db_interaction.card_information(card['cardcode'])
                 if json_card_info['chance'] == 'none':
                     chance1, count1 = [0, 0]
                     chance2, count2 = [0, 0]
