@@ -3,9 +3,11 @@
 
 import db_interaction
 from datetime import datetime
+import json
 
 list_of_objects = []
-
+a = []
+daterange = ('01', '02', '03', '04')
 
 class Subscriber:
     def __init__(self, msisdn):
@@ -13,7 +15,8 @@ class Subscriber:
         self.prize_dict = db_interaction.current_lots()  # {1: {}, 2: {}, 3: {}}
         self.msisdn = msisdn
         self.subscriber_cards_dict = db_interaction.msisdn_cards(self.msisdn)  # выборка из БД
-        # {1: {u'cardcode': u'2000000045665', u'score': u'600', u'id': u'0'}, 2: {u'cardcode': u'2000002456650', u'score': u'400', u'id': u'1'}}
+        # {1: {u'cardcode': u'2000000045665', u'score': u'600', u'id': u'0'}, 2: {u'cardcode': u'2000002456650',
+        # u'score': u'400', u'id': u'1'}}
 
 
     def __str__(self):
@@ -25,10 +28,14 @@ class Subscriber:
         return text, sop
 
     def level_up(self, level):
-        self.level += str(level)
+        if len(self.level) == 3 and level != 1:
+            self.level += str(1) + str(level - 1)
+        elif len(self.level) == 6:
+            self.level = self.level[:-2] + str(level)
+        else:
+            self.level += str(level)
 
     def level_down(self, level=None):
-        print self.level
         if len(self.subscriber_cards_dict) == 1 and len(self.level) != 2 and len(self.level) != 3:
             self.level = '01'
         elif len(self.level) == 2:
@@ -60,6 +67,7 @@ class Subscriber:
 
     def answer_text(self):
         text = None
+        sop = 0x03
         # first request
         # *xxx#
         if len(self.level) == 1:
@@ -80,27 +88,21 @@ class Subscriber:
                     text = "{}".format(my_str_cards)
                     sop = 0x03
                 else:
-                    for card in self.subscriber_cards_dict:
-                        my_str_cards = ''
-                        for card in self.subscriber_cards_dict:
-                            my_str_cards += '{}: {}\n'.format(card['cardcode'])
-                        text = "Viberete vashu kartu:\n{}".format(my_str_cards)
-                        sop = 0x02
+                    my_str_cards = ''
+                    for num, card in self.subscriber_cards_dict.iteritems():
+                        my_str_cards += '{}: {}\n'.format(num, card['cardcode'])
+                    text = "Viberete vashu kartu:\n{}".format(my_str_cards)
+                    sop = 0x02
 
 
             # lots menu *xxx*2#
             elif self.level == '02':
                 current_date = datetime.today().strftime('%d%m%Y')
                 my_str_lots = ''
-
-
-                for prize in self.prize_dict.values():
-                    n = 1
-                    my_str_lots = '{}:{}\n'.format(n, prize['prizename'])
-                    n += 1
+                for num, prize in self.prize_dict.iteritems():
+                    my_str_lots += '{}:{}\n'.format(num, prize['prizename'])
                 text = '{}\n{}\n0 - Nazad'.format(current_date, my_str_lots)
                 sop = 0x02
-
                 return text, sop
             # lots ends
             #
@@ -120,23 +122,29 @@ class Subscriber:
                 card = self.subscriber_cards_dict[request_card_id]  # card number
                 # card_info = db_interaction.card_information(card)
                 # proverka daty
-                if datetime.today().strftime('%d') in xrange(1,4):
+                if datetime.today().strftime('%d') in daterange:
                     text = '{}\n1. Podrobnaya info po karte\nS 1 po 3 chislo mesyaca priobretenie shansov ' \
-                           'ogranicheno. Povtorite popitku posle 3-go chisla.\n0 - Nazad'
+                           'ogranicheno. Povtorite popitku posle 3-go chisla.\n0 - Nazad'.format(card['cardcode'])
+                    sop = 0x02
                 elif self.prize_dict is None:
-                    text = '{}\n1. Podrobnaya info po karte\nNa danniy moment net akcii\n0 - Nazad'
+                    text = '{}\n1. Podrobnaya info po karte\nNa danniy moment net akcii\n0 - Nazad'.format(
+                        card['cardcode'])
+                    sop = 0x02
                 else:
-                    str_prizes = ''
+                    str_prz = ''
                     """
                     for key, value in dict.iteritems():
                         print '{}:{}'.format(key, value['prizename'])
                     """
-                    for key, value in self.prize_dict.iteritems():
-                        str_prizes += '{}:{}\n'.format(key, value['prizename'])
-                    text = '{}\n1. Podrobnaya info po karte\n{}0 - Nazad'.format(str_prizes)
-                sop = 0x02
-            except IndexError:
-                text = 'Unknown error. Try later.'
+                    # for key, value in self.prize_dict.iteritems():
+                    #     str_prz += '{}:{}\n'.format(key, value['prizename'])
+                    # str_prz = ""
+                    text = 'Na karte {} ballov\n1. Podrobnaya info po karte\n2. Priobresti shans na priz 1(x500)\n3. ' \
+                           'Priobresti shans na priz 2(x500)\n0 - Nazad'.format(card['score'])
+                    sop = 0x02
+            except IndexError as err:
+                print err
+                text = 'Unknown error. Try later.' + ' in card selection'
                 sop = 0x03
 
         # card menu selection
@@ -158,43 +166,68 @@ class Subscriber:
                 if json_card_info['discount'] in ('', ' '):
                     discount = 0
 
-                text = 'Skidka {disc}%\nPriobreteno soput.tovarov: {goods}rub\nBalli: {score}\nShansi priz 1: {first_count}' \
-                      '\nShansi priz 2: {second_count}\n1.Priobresti shans na priz 1\n2.Priobresti shans na priz 2'.format(
-                    disc=discount, first_count=count1, second_count=count2, **json_card_info)
+                if datetime.today().strftime('%d') in daterange:
+                    text = 'Skidka {disc}%\nPriobreteno soput.tovarov: {goods}rub\nBalli: {score}\nShansi priz 1: {first_count}' \
+                           '\nShansi priz 2: {second_count}\nS 1 po 3 chislo mesyaca priobretenie shansov ' \
+                           'ogranicheno.'.format(
+                        disc=discount, first_count=count1, second_count=count2, **json_card_info)
+                else:
+                    text = 'Skidka {disc}%\nPriobreteno soput.tovarov: {goods}rub\nBalli: {score}\nShansi priz 1: {first_count}' \
+                          '\nShansi priz 2: {second_count}\n1.Priobresti shans na priz 1\n2.Priobresti shans na priz 2'.format(
+                        disc=discount, first_count=count1, second_count=count2, **json_card_info)
+
+
                 sop = 0x02
-            elif int(answer) != 1:
-                try:
-                    if datetime.today().strftime('%d') in xrange(1,4) or self.prize_dict is None:
-                        text, sop = self.error_msg()
-                    else:
-                        text = 'Priobresti shans na priz {}\n1.Da\n0.Net'.format(self.prize_dict[int(answer) - 1]['prizename'])
-                        sop = 0x02
-                except IndexError:
-                    text = 'Unknown error. Try later.'
-                    sop = 0x03
+
             else:
-                text = 'Unknown error. Try later.'
-                sop = 0x03
+                self.level_up('1')
+                self.lvel_up(answer - 1)
 
         elif len(self.level) == 5:
             # 01xyz
             # x = [2] - card id
-            # y = [3] - otvet(priobretenie shansa, !=1) - id lota
-            # z = [3] - podtvergdenie na pokupku shansa po y-1(id shansa)
+            # y = [3] - otvet(priobretenie shansa is menu card info)
+            # z = [4] - shansa po y-1(id shansa)
             request_card_id = int(self.level[2])
-            chance_id = int(self.level[3]) - 1  # 1 - info po karte, 2,3,4 cifri vibora = 1,2,3 id shansa
-            if int(self.level[4]) == 1:  # Otvet - Da
+            chance_id = int(self.level[4])  # 1 - info po karte, 2,3,4 cifri vibora = 1,2,3 id shansa
+            date = datetime.today().strftime('%d')
+            try:
+                if str(date) in daterange or self.prize_dict is None:
+                    text, sop = self.error_msg()
+                else:
+                    text = 'Priobresti shans na priz {}\n1.Da\n0.Net'.format(
+                        self.prize_dict[int(chance_id)]['prizename'])
+                    sop = 0x02
+            except KeyError:
+                text = 'Unknown error. Try later.'
+                sop = 0x03
+
+        elif len(self.level) == 6:
+            request_card_id = int(self.level[2])
+            chance_id = int(self.level[4])  # 1 - info po karte, 2,3,4 cifri vibora = 1,2,3 id shansa
+            change_result = 0
+            if int(self.level[5]) == 1:
                 try:
-                    change_result = db_interaction.change_info(self.subscriber_cards_dict[request_card_id], chance_id)
-                except Exception:
+                    json_buy_result = db_interaction.buyprize(self.subscriber_cards_dict[request_card_id]['cardcode'], chance_id)
+                    # json_buy_result = json.dumps(json_buy_result)
+                    # json_buy_result = json.loads(json_buy_result)
+                except Exception as err:
+                    print err
                     change_result = 1  # error
                 if change_result == 1:  # error
                     text = 'Unknown error. Try later.'
                     sop = 0x03
-                elif change_result == 0:
-                    text = 'Vi priobreli shans na priz {}: {}\n0 - Priobresti shansi'.format(chance_id,
-                                                                                             self.prize_dict[
-                                                                                                 chance_id]['prizename'])
+                elif change_result == 0 and json_buy_result['buyresult'] != '1':
+                    text = 'Vi priobreli shans na priz {} {}\nPriobresti esche shans?\n1.Da, na priz 1\n2.Da, na priz ' \
+                           '2'.format(json_buy_result['prizenum'], self.prize_dict[int(
+                        json_buy_result['prizenum'])]['prizename'])
+                    sop = 0x02
+                elif change_result == 0 and json_buy_result['buyresult'] == '1':
+                    text = 'Error while buying'
+                    sop = 0x02
+                else:
+                    text = 'Unknown error. Please, try later!'
+                    sop = 0x03
             else:
                 text = "Otmeneno pol'zovatelem"
                 sop = 0x03
