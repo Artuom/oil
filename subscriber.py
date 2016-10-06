@@ -29,7 +29,7 @@ class Subscriber:
 
     def level_up(self, level):
         if len(self.level) == 3 and level != 1:
-            self.level += str(1) + str(level - 1)
+            self.level += str(1) + str(int(level) - 1)
         elif len(self.level) == 6:
             self.level = self.level[:-2] + str(level)
         else:
