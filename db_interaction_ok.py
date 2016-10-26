@@ -6,7 +6,7 @@
 # conn = pymssql.connect(host='', user='', password='', database='')
 # conn = pymssql.connect(host='mnssis-sql-test.branches.beloil.by', user='IT\\voip_service', password='V0ip$er', database='RCP_720')
 from time import sleep
-
+import logging
 import cx_Oracle
 from datetime import datetime
 import os
@@ -18,6 +18,7 @@ os.environ["NLS_LANG"] = "Russian.CL8MSWIN1251"
 cur = None
 unsuccessCount = 0
 
+logging.basicConfig(format = u'%(levelname)-8s [%(asctime)s] %(message)s', level = logging.DEBUG, filename = u'db.log')
 
 def db_connect():
     global cur
@@ -25,8 +26,8 @@ def db_connect():
     try:
         con = cx_Oracle.connect('RCD_USSD/ubeysebyobstenu@10.93.1.24:21523/orclrcd')
         cur = con.cursor()
-    except:
-        print 'problem while connecting to db'
+    except Exception as err:
+        logging.info('problem while connecting to db', ' error ', err)
         sleep(10)
         db_connect()
 
@@ -46,12 +47,6 @@ def msisdn_cards(msisdn):
     if unsuccessCount >= 3:
         db_reconnect()
     msisdn = '+{}'.format(str(msisdn))
-
-    """
-    phone = json.loads(a)
-    print phone['cardlist']
-    print dict(enumerate(phone['cardlist'], 1))
-    """
     try:
         result = cx_Oracle.FIXED_CHAR
         # cur.callfunc('RCD.CHECKPHONE', result, ['+375295730676'])
@@ -63,10 +58,11 @@ def msisdn_cards(msisdn):
             subscriber_cards_dict = None
         else:
             subscriber_cards_dict = dict(enumerate(json_cards['cardlist'], 1))
+        logging.info(msisdn, ' ', subscriber_cards_dict)
         return subscriber_cards_dict
-    except:
+    except Exception as err:
         unsuccessCount += 1
-        print 'problem while checkphone for {}'.format(msisdn)
+        logging.info('problem while checkphone for {}'.format(msisdn), ' error ', err)
 
 
 def card_information(card_id):
@@ -79,10 +75,11 @@ def card_information(card_id):
         # u'0', u'cardcode': u'00010'}
         # {u'status': 0, u'sumgoods': u'0', u'score': 0, u'lots2': 0, u'lots1': 0, u'distype': u'3', u'disvalue': u'0',
         # u'cardcode': u'00010'}
+        logging.info(json_card_info)
         return json_card_info
-    except:
+    except Exception as err:
         unsuccessCount += 1
-        print 'problem while getcardinfo for {}'.format(card_id)
+        logging.info('problem while getcardinfo for {}'.format(card_id), ' error ', err)
 
 
 def buyprize(card_number, lot_id):
@@ -91,6 +88,7 @@ def buyprize(card_number, lot_id):
     # "resultmessage":"▒▒▒▒▒▒▒▒▒▒ ▒▒▒▒ ▒▒▒▒▒▒, ▒▒▒ ▒▒▒▒▒▒▒ ▒ ▒▒▒▒▒▒▒ ▒▒▒▒▒▒."}'
     result = cx_Oracle.FIXED_CHAR
     json_buy_result = json.loads(cur.callfunc('RCD.SFLotsUSSDBuy', result, [card_number, 1]).rstrip().decode('cp1251'))
+    logging.info(json_buy_result)
     return json_buy_result
 
 
@@ -108,7 +106,8 @@ def current_lots():
             prize_dict = None
         else:
             prize_dict = dict(enumerate(lots_list, 1))
+        logging.info(prize_dict)
         return prize_dict
-    except:
+    except Exception as err:
         unsuccessCount += 1
-        print 'problem while lots for {}'.format(date)
+        logging.info('problem while lots for {}'.format(date), ' error ', err)
