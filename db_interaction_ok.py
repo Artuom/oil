@@ -27,7 +27,7 @@ def db_connect():
         con = cx_Oracle.connect('RCD_USSD/ubeysebyobstenu@10.93.1.24:21523/orclrcd')
         cur = con.cursor()
     except Exception as err:
-        logging.info('problem while connecting to db', ' error ', err)
+        logging.info('problem while connecting to db.\nerror\n {}'.format(err))
         sleep(10)
         db_connect()
 
@@ -58,11 +58,11 @@ def msisdn_cards(msisdn):
             subscriber_cards_dict = None
         else:
             subscriber_cards_dict = dict(enumerate(json_cards['cardlist'], 1))
-        logging.info(msisdn, ' ', subscriber_cards_dict)
+        logging.info('{} {}'.format(msisdn, subscriber_cards_dict))
         return subscriber_cards_dict
     except Exception as err:
         unsuccessCount += 1
-        logging.info('problem while checkphone for {}'.format(msisdn), ' error ', err)
+        logging.info('problem while checkphone for {}\n{}'.format(msisdn, err))
 
 
 def card_information(card_id):
@@ -75,11 +75,11 @@ def card_information(card_id):
         # u'0', u'cardcode': u'00010'}
         # {u'status': 0, u'sumgoods': u'0', u'score': 0, u'lots2': 0, u'lots1': 0, u'distype': u'3', u'disvalue': u'0',
         # u'cardcode': u'00010'}
-        logging.info(json_card_info)
+        logging.info('{}'.format(json_card_info))
         return json_card_info
     except Exception as err:
         unsuccessCount += 1
-        logging.info('problem while getcardinfo for {}'.format(card_id), ' error ', err)
+        logging.info('problem while getcardinfo for {}\n{}'.format(card_id, err))
 
 
 def buyprize(card_number, lot_id):
@@ -88,7 +88,7 @@ def buyprize(card_number, lot_id):
     # "resultmessage":"▒▒▒▒▒▒▒▒▒▒ ▒▒▒▒ ▒▒▒▒▒▒, ▒▒▒ ▒▒▒▒▒▒▒ ▒ ▒▒▒▒▒▒▒ ▒▒▒▒▒▒."}'
     result = cx_Oracle.FIXED_CHAR
     json_buy_result = json.loads(cur.callfunc('RCD.SFLotsUSSDBuy', result, [card_number, 1]).rstrip().decode('cp1251'))
-    logging.info(json_buy_result)
+    logging.info('{}'.format(json_buy_result))
     return json_buy_result
 
 
@@ -106,8 +106,8 @@ def current_lots():
             prize_dict = None
         else:
             prize_dict = dict(enumerate(lots_list, 1))
-        logging.info(prize_dict)
+        logging.info('{}'.format(prize_dict))
         return prize_dict
     except Exception as err:
         unsuccessCount += 1
-        logging.info('problem while lots for {}'.format(date), ' error ', err)
+        logging.info('problem while lots for {}\n{}'.format(date, err))
