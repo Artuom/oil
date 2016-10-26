@@ -4,6 +4,7 @@
 import db_interaction
 from datetime import datetime
 import json
+from unidecode import unidecode
 
 list_of_objects = []
 a = []
@@ -158,19 +159,32 @@ class Subscriber:
             print 'card ', card['cardcode']
             if int(answer) == 1:
                 json_card_info = db_interaction.card_information(card['cardcode'])
+
                 if json_card_info['chance'] == 'none':
-                    chance1, count1 = [0, 0]
-                    chance2, count2 = [0, 0]
+                    count1 = 0
+                    count2 = 0
                 else:
-                    count1 = json_card_info['chance'][0]['count']
-                    count2 = json_card_info['chance'][1]['count']
+                    count1 = 0
+                    count2 = 0
+                    for i in json_card_info[u'chance']:
+                        if i['num'] == '1':
+                            count1 = i['count']
+                        if i['num'] == '2':
+                            count2 = i['count']
+
                 if json_card_info['discount'] in ('', ' '):
                     discount = 0
+                else:
+                    discount = json_card_info['discount']
 
                 if datetime.today().strftime('%d') in daterange:
                     text = 'Skidka {disc}%\nPriobreteno soput.tovarov: {goods}rub\nBalli: {score}\nShansi priz 1: {first_count}' \
                            '\nShansi priz 2: {second_count}\nS 1 po 3 chislo mesyaca priobretenie shansov ' \
                            'ogranicheno.'.format(
+                        disc=discount, first_count=count1, second_count=count2, **json_card_info)
+                elif self.prize_dict is None:
+                    text = 'Skidka {disc}%\nPriobreteno soput.tovarov: {goods}rub\nBalli: {score}\nShansi priz 1: {first_count}' \
+                           '\nShansi priz 2: {second_count}\nNet akcii'.format(
                         disc=discount, first_count=count1, second_count=count2, **json_card_info)
                 else:
                     text = 'Skidka {disc}%\nPriobreteno soput.tovarov: {goods}rub\nBalli: {score}\nShansi priz 1: {first_count}' \
@@ -219,12 +233,14 @@ class Subscriber:
                     text = 'Unknown error. Try later.'
                     sop = 0x03
                 elif change_result == 0 and json_buy_result['buyresult'] != '1':
+                    self.subscriber_cards_dict = db_interaction.msisdn_cards(self.msisdn)
                     text = 'Vi priobreli shans na priz {} {}\nPriobresti esche shans?\n1.Da, na priz 1\n2.Da, na priz ' \
                            '2'.format(json_buy_result['prizenum'], self.prize_dict[int(
                         json_buy_result['prizenum'])]['prizename'])
                     sop = 0x02
                 elif change_result == 0 and json_buy_result['buyresult'] == '1':
-                    text = 'Error while buying'
+                    # json_buy_result = json_buy_result.decode('cp1251')
+                    text = unidecode(json_buy_result['resultmessage'])
                     sop = 0x02
                 else:
                     text = 'Unknown error. Please, try later!'
