@@ -5,10 +5,18 @@ import db_interaction
 from datetime import datetime
 import json
 from unidecode import unidecode
+import logging
 
 list_of_objects = []
 a = []
 daterange = ('01', '02', '03', '04')
+
+log = logging.getLogger('subscriber')
+log.setLevel(logging.INFO)
+hand = logging.FileHandler('active.txt', 'a')
+hand.setFormatter(logging.Formatter('%(levelname)-8s [%(asctime)s] %(message)s'))
+log.addHandler(hand)
+
 
 class Subscriber:
     def __init__(self, msisdn):
@@ -18,7 +26,7 @@ class Subscriber:
         self.subscriber_cards_dict = db_interaction.msisdn_cards(self.msisdn)  # выборка из БД
         # {1: {u'cardcode': u'2000000045665', u'score': u'600', u'id': u'0'}, 2: {u'cardcode': u'2000002456650',
         # u'score': u'400', u'id': u'1'}}
-
+        log.info('init {}: {}'.format(self.msisdn, self.subscriber_cards_dict))
 
     def __str__(self):
         return self.msisdn
@@ -26,6 +34,7 @@ class Subscriber:
     def error_msg(self):
         text = 'Unknown error. Try later!'
         sop = 0x03
+        log.info('{} in error_msg'.format(self.msisdn))
         return text, sop
 
     def level_up(self, level):
@@ -104,6 +113,7 @@ class Subscriber:
                     my_str_lots += '{}:{}\n'.format(num, prize['prizename'])
                 text = '{}\n{}\n0 - Nazad'.format(current_date, my_str_lots)
                 sop = 0x02
+                log.info('level = {}: {}'.format(self.level, text))
                 return text, sop
             # lots ends
             #
@@ -111,6 +121,7 @@ class Subscriber:
             elif self.level == '03':
                 text = 'You will receive an sms. Currently unavailable.'
                 sop = 0x03
+                log.info('level = {}: {}'.format(self.level, text))
                 return text, sop
 
         # card selection
@@ -133,19 +144,12 @@ class Subscriber:
                     sop = 0x02
                 else:
                     str_prz = ''
-                    """
-                    for key, value in dict.iteritems():
-                        print '{}:{}'.format(key, value['prizename'])
-                    """
-                    # for key, value in self.prize_dict.iteritems():
-                    #     str_prz += '{}:{}\n'.format(key, value['prizename'])
-                    # str_prz = ""
                     text = 'Na karte {} ballov\n1. Podrobnaya info po karte\n2. Priobresti shans na priz 1(x500)\n3. ' \
                            'Priobresti shans na priz 2(x500)\n0 - Nazad'.format(card['score'])
                     sop = 0x02
-            except IndexError as err:
-                print err
-                text = 'Unknown error. Try later.' + ' in card selection'
+            except Exception as err:
+                text = 'Unknown error. Try later.'
+                log.info('error in card selection while level = {}. {}'.format(self.level, err.message))
                 sop = 0x03
 
         # card menu selection
