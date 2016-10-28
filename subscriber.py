@@ -9,7 +9,7 @@ import logging
 
 list_of_objects = []
 a = []
-daterange = ('01', '02', '03', '04')
+daterange = ('01', '02', '03')
 
 log = logging.getLogger('subscriber')
 log.setLevel(logging.INFO)
@@ -160,10 +160,9 @@ class Subscriber:
             request_card_id = int(self.level[2])
             answer = self.level[3]
             card = self.subscriber_cards_dict[request_card_id]  # card number
-            print 'card ', card['cardcode']
+            # log.info('msisdn: {}, level: {}, card: {}').format(self.msisdn, self.level, card['cardcode'])
             if int(answer) == 1:
                 json_card_info = db_interaction.card_information(card['cardcode'])
-
                 if json_card_info['chance'] == 'none':
                     count1 = 0
                     count2 = 0
@@ -194,8 +193,6 @@ class Subscriber:
                     text = 'Skidka {disc}%\nPriobreteno soput.tovarov: {goods}rub\nBalli: {score}\nShansi priz 1: {first_count}' \
                           '\nShansi priz 2: {second_count}\n1.Priobresti shans na priz 1\n2.Priobresti shans na priz 2'.format(
                         disc=discount, first_count=count1, second_count=count2, **json_card_info)
-
-
                 sop = 0x02
 
             else:
@@ -217,9 +214,10 @@ class Subscriber:
                     text = 'Priobresti shans na priz {}\n1.Da\n0.Net'.format(
                         self.prize_dict[int(chance_id)]['prizename'])
                     sop = 0x02
-            except KeyError:
+            except Exception as err:
                 text = 'Unknown error. Try later.'
                 sop = 0x03
+                log.info('error: {}, msisdn: {}, level: {}'.format(err.message, self.msisdn, self.level))
 
         elif len(self.level) == 6:
             request_card_id = int(self.level[2])
@@ -228,10 +226,8 @@ class Subscriber:
             if int(self.level[5]) == 1:
                 try:
                     json_buy_result = db_interaction.buyprize(self.subscriber_cards_dict[request_card_id]['cardcode'], chance_id)
-                    # json_buy_result = json.dumps(json_buy_result)
-                    # json_buy_result = json.loads(json_buy_result)
                 except Exception as err:
-                    print err
+                    log.info('error while buying: {}, msisdn: {}, level: {}'.format(err.message, self.msisdn, self.level))
                     change_result = 1  # error
                 if change_result == 1:  # error
                     text = 'Unknown error. Try later.'
@@ -252,9 +248,9 @@ class Subscriber:
             else:
                 text = "Otmeneno pol'zovatelem"
                 sop = 0x03
-
+        log.info('{} is returned the text: {}, and sop: {}'.format(self.msisdn, text, sop))
         return text, sop
 
     def __del__(self):
-        print self.msisdn + ' finished'
+        log.info('{} finished'.format(self.msisdn))
         del self
