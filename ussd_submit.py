@@ -10,7 +10,11 @@ import subscriber
 # import read_json
 
 
-# logging.basicConfig(level='DEBUG')
+log = logging.getLogger('submit')
+log.setLevel(logging.INFO)
+hand = logging.FileHandler('submit.log', 'a')
+hand.setFormatter(logging.Formatter('%(levelname)-8s [%(asctime)s] %(message)s'))
+log.addHandler(hand)
 
 
 def submit(client, msisdn, src_addr, ussd_service_op, user_message_reference=None,  text=""):
@@ -47,12 +51,5 @@ def submit(client, msisdn, src_addr, ussd_service_op, user_message_reference=Non
             ussd_service_op=ussd_service_op,
             user_message_reference=user_message_reference,
         )
-    wait = client.read_pdu()
-    """if wait.message_id == None:
-        submit(client, 1, "709")
-    else:
-        pass"""
-    with open('data.log', 'a') as fh:
-        # fh.write(time.strftime("%Y-%m-%d %H:%M:%S") + " Sent " + str(msisdn) + '\n')
-        pass
-    return wait.message_id
+    log.info('{}: {}'.format(pdu.destination_addr, pdu.short_message))
+    return 1

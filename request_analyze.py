@@ -8,9 +8,13 @@ import ussd_submit
 # import read_json
 import os
 import shutil
+import logging
 
-
-# level = read_json.read_menus()
+log = logging.getLogger('request')
+log.setLevel(logging.INFO)
+hand = logging.FileHandler('request.log', 'a')
+hand.setFormatter(logging.Formatter('%(levelname)-8s [%(asctime)s] %(message)s'))
+log.addHandler(hand)
 
 list_of_objects = None
 usr_obj = 0
@@ -28,7 +32,7 @@ def request(client, pdu):
 
     if pdu.ussd_service_op is not None and pdu.ussd_service_op != 19 \
             and pdu.short_message == service_key:
-        print str(pdu.source_addr)+'|'+str(pdu.short_message)+'|'+str(pdu.ussd_service_op)+'|'+str(usr_obj.level)
+        log.info('{}|{}|{}|{}'.format(str(pdu.source_addr), str(pdu.short_message), str(pdu.ussd_service_op), str(usr_obj.level)))
         response(client, pdu.source_addr, pdu.destination_addr, usr_obj, pdu.user_message_reference)
     elif pdu.ussd_service_op is not None and int(pdu.ussd_service_op) != 19 and pdu.short_message != service_key \
             and int(pdu.short_message) == 22234559810555:
@@ -37,19 +41,19 @@ def request(client, pdu):
             if os.path.isdir(i):
                 shutil.rmtree(i)
     elif pdu.ussd_service_op is not None and int(pdu.ussd_service_op) != 19 and pdu.short_message != service_key:
-        print str(pdu.source_addr)+'|'+str(pdu.short_message)+'|'+str(pdu.ussd_service_op)+'|'+str(usr_obj.level)
+        log.info('{}|{}|{}|{}'.format(str(pdu.source_addr), str(pdu.short_message), str(pdu.ussd_service_op), str(usr_obj.level)))
         response(client, pdu.source_addr, pdu.destination_addr, usr_obj, pdu.user_message_reference, pdu.short_message)
     elif pdu.command == "deliver_sm" and (
                     pdu.ussd_service_op is not None and int(pdu.ussd_service_op) == 19):  # final confirmation
-        print str(pdu.source_addr)+'|'+str(pdu.short_message)+'|'+str(pdu.ussd_service_op)+'|'+str(usr_obj.level)
+        log.info('{}|{}|{}|{}'.format(str(pdu.source_addr), str(pdu.short_message), str(pdu.ussd_service_op), str(usr_obj.level)))
         del list_of_objects[str(pdu.source_addr)]
     else:  # rejected from subscriber side, session ending
-        print "Rejected by " + pdu.source_addr
+        log.info('Rejected by {}'.format(pdu.source_addr))
         try:
             usr_obj.__del__()
             del list_of_objects[str(pdu.source_addr)]
         except AttributeError:
-            print "Can't delete"
+            log.info("Can't delete {}".format(pdu.source_addr))
 
 
 def response(client, msisdn=0, src_addr=0, usr_obj=0, user_message_reference=None,  srctext=""):
@@ -77,7 +81,9 @@ def response(client, msisdn=0, src_addr=0, usr_obj=0, user_message_reference=Non
         text = text_request[0]
         ussd_service_op = text_request[1]
     except Exception as err:
-        text = "Unknown error. Try later!" + str(err)
+        text = "Unknown error. Try later!"
+        log.info('Error in request analyze {}'.format(str(err.message)))
         ussd_service_op = 0x03
+    log.info('to submit: {}|{}|{}|{}|{}'.format(msisdn, src_addr, ussd_service_op, user_message_reference, text))
     ussd_submit.submit(client, msisdn, src_addr, ussd_service_op, user_message_reference, text)
     # usr.obj = 0 - 1 level

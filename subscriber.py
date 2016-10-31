@@ -13,7 +13,7 @@ daterange = ('01', '02', '03')
 
 log = logging.getLogger('subscriber')
 log.setLevel(logging.INFO)
-hand = logging.FileHandler('active.txt', 'a')
+hand = logging.FileHandler('subscriber.log', 'a')
 hand.setFormatter(logging.Formatter('%(levelname)-8s [%(asctime)s] %(message)s'))
 log.addHandler(hand)
 
@@ -89,21 +89,20 @@ class Subscriber:
             # level = 0x
             my_str_cards = ''
             # esli karta odna i uroven' zaprosa info po karte, podnyat' level
-            if len(self.subscriber_cards_dict) == 1 and self.level == '01':
+            if self.subscriber_cards_dict is None:
+                my_str_cards = 'U vas net dostupnih kart.'
+                text = "{}".format(my_str_cards)
+                sop = 0x03
+
+            elif len(self.subscriber_cards_dict) == 1 and self.level == '01':
                 self.level_up(1)
 
             elif len(self.subscriber_cards_dict) != 1 and self.level == '01':
-                if self.subscriber_cards_dict is None:
-                    my_str_cards = 'U vas net dostupnih kart.'
-                    text = "{}".format(my_str_cards)
-                    sop = 0x03
-                else:
-                    my_str_cards = ''
-                    for num, card in self.subscriber_cards_dict.iteritems():
-                        my_str_cards += '{}: {}\n'.format(num, card['cardcode'])
-                    text = "Viberete vashu kartu:\n{}".format(my_str_cards)
-                    sop = 0x02
-
+                my_str_cards = ''
+                for num, card in self.subscriber_cards_dict.iteritems():
+                    my_str_cards += '{}: {}\n'.format(num, card['cardcode'])
+                text = "Viberete vashu kartu:\n{}".format(my_str_cards)
+                sop = 0x02
 
             # lots menu *xxx*2#
             elif self.level == '02':
@@ -248,7 +247,7 @@ class Subscriber:
             else:
                 text = "Otmeneno pol'zovatelem"
                 sop = 0x03
-        log.info('{} is returned the text: {}, and sop: {}'.format(self.msisdn, text, sop))
+        log.info('{} is returned the text:\n{}\nsop: {}'.format(self.msisdn, text, sop))
         return text, sop
 
     def __del__(self):

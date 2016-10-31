@@ -6,8 +6,13 @@ import time
 import subscriber
 import ussd_submit
 # import read_json
+import logging
 
-# level = read_json.read_menus()
+log = logging.getLogger('request_v')
+log.setLevel(logging.INFO)
+hand = logging.FileHandler('request_v.log', 'a')
+hand.setFormatter(logging.Formatter('%(levelname)-8s [%(asctime)s] %(message)s'))
+log.addHandler(hand)
 
 list_of_objects = None
 usr_obj = 0
@@ -25,22 +30,19 @@ def request(client, pdu):
 
     if pdu.ussd_service_op is not None and pdu.ussd_service_op != 19 and pdu.ussd_service_op != 33 \
             and pdu.short_message == service_key:
-        print str(pdu.source_addr) + '|' + str(pdu.short_message) + '|' + str(pdu.ussd_service_op) + '|' + str(
-            usr_obj.level)
+        log.info('{}|{}|{}|{}'.format(str(pdu.source_addr), str(pdu.short_message), str(pdu.ussd_service_op),str(usr_obj.level)))
         response(client, pdu.source_addr, pdu.destination_addr, usr_obj, pdu.user_message_reference)
 
     elif (pdu.ussd_service_op is not None and int(pdu.ussd_service_op) != 19) and pdu.ussd_service_op != '33' \
             and pdu.short_message != service_key:
-        print str(pdu.source_addr) + '|' + str(pdu.short_message) + '|' + str(pdu.ussd_service_op) + '|' + str(
-            usr_obj.level)
+        log.info('{}|{}|{}|{}'.format(str(pdu.source_addr), str(pdu.short_message), str(pdu.ussd_service_op), str(usr_obj.level)))
         response(client, pdu.source_addr, pdu.destination_addr, usr_obj, pdu.user_message_reference, pdu.short_message)
 
     elif pdu.ussd_service_op is not None and (int(pdu.ussd_service_op) == 19 or int(pdu.ussd_service_op) == 33):
-        print str(pdu.source_addr) + '|' + str(pdu.short_message) + '|' + str(pdu.ussd_service_op) + '|' + str(
-            usr_obj.level)
+        log.info('{}|{}|{}|{}'.format(str(pdu.source_addr), str(pdu.short_message), str(pdu.ussd_service_op), str(usr_obj.level)))
         if int(pdu.ussd_service_op) == 19 and pdu.velc_notif:
             # '0x1120': 'Belorusneft'
-            print "Rejected by " + pdu.source_addr
+            log.info('Rejected by {}'.format(pdu.source_addr))
             response(client, pdu.source_addr, pdu.destination_addr, usr_obj, pdu.user_message_reference,
                      'final')
         usr_obj.__del__()
@@ -55,7 +57,7 @@ def request(client, pdu):
             usr_obj.__del__()
             del list_of_objects[str(pdu.source_addr)]
         except AttributeError:
-            print "Can't delete"
+            log.info("Can't delete {}".format(pdu.source_addr))
 
 
 def response(client, msisdn=0, src_addr=0, usr_obj=0, user_message_reference=None,  srctext=""):
@@ -90,5 +92,6 @@ def response(client, msisdn=0, src_addr=0, usr_obj=0, user_message_reference=Non
     except Exception as err:
         text = "Unknown error. Try later!" + str(err)
         ussd_service_op = 0x03
+    log.info('to submit: {}|{}|{}|{}|{}'.format(msisdn, src_addr, ussd_service_op, user_message_reference, text))
     ussd_submit.submit(client, msisdn, src_addr, ussd_service_op, user_message_reference, text)
     # usr.obj = 0 - 1 level
