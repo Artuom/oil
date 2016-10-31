@@ -5,6 +5,7 @@
 # import pymssql
 # conn = pymssql.connect(host='', user='', password='', database='')
 # conn = pymssql.connect(host='mnssis-sql-test.branches.beloil.by', user='IT\\voip_service', password='V0ip$er', database='RCP_720')
+# ok
 from time import sleep
 import logging
 import cx_Oracle
