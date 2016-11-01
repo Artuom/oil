@@ -52,8 +52,8 @@ def request(client, pdu):
         try:
             usr_obj.__del__()
             del list_of_objects[str(pdu.source_addr)]
-        except AttributeError:
-            log.info("Can't delete {}".format(pdu.source_addr))
+        except Exception as err:
+            log.info("Can't delete {}: {}".format(pdu.source_addr, err.message))
 
 
 def response(client, msisdn=0, src_addr=0, usr_obj=0, user_message_reference=None,  srctext=""):
