@@ -73,3 +73,16 @@ def current_lots():
     global unsuccessCount
     prize_dict = {1: {u'prizenum': u'1', u'prizename': u'FORD EcoSport (Trend)', u'prizecost': u'500'}, 2: {u'prizenum': u'2', u'prizename': u'Kruiz po stranam Karibskogo morya', u'prizecost': u'500'}, 3: {u'prizenum': u'3', u'prizename': u'Zapravka do polnogo baka', u'prizecost': u'0'}}
     return prize_dict
+
+
+def prices():
+    outurl2 = 'http://www.belorusneft.by/beloil-map/ussd/prices'
+    try:
+        r4 = requests.get(outurl2)
+        print r4.json()['date']
+        text = str(r4.json()['date'])+'\n'
+        for i in r4.json()['prices']:
+            text += '{} -> {} BYN\n'.format(unidecode(i['fuelname']), i['price'])
+        return text
+    except Exception as err:
+        log.info('{}'.format(err.message))

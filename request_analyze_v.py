@@ -22,6 +22,7 @@ service_key = "*877#"
 def request(client, pdu):
     global usr_obj
     global list_of_objects
+    log.info(pdu)
     if str(pdu.source_addr) in list_of_objects.keys() and pdu.short_message != service_key and pdu.ussd_service_op != '33':
         usr_obj = list_of_objects[str(pdu.source_addr)]
     elif pdu.ussd_service_op != '33':

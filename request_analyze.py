@@ -24,6 +24,7 @@ service_key = "*226#"
 def request(client, pdu):
     global usr_obj
     global list_of_objects
+    log.info(pdu)
     if str(pdu.source_addr) in list_of_objects.keys() and pdu.short_message != service_key:
         usr_obj = list_of_objects[str(pdu.source_addr)]
     else:

@@ -13,6 +13,7 @@ from datetime import datetime
 import os
 from unidecode import unidecode
 import json
+import requests
 
 os.environ["NLS_LANG"] = "Russian.CL8MSWIN1251"
 
@@ -117,3 +118,28 @@ def current_lots():
     except Exception as err:
         unsuccessCount += 1
         log.info('problem while lots for {}\n{}'.format(date, err))
+
+
+def prices():
+    outurl2 = 'http://www.belorusneft.by/beloil-map/ussd/prices'
+    try:
+        r4 = requests.get(outurl2)
+        print r4.json()['date']
+        text = str(r4.json()['date'])+'\n'
+        for i in r4.json()['prices']:
+            text += '{} -> {} BYN\n'.format(unidecode(i['fuelname']), i['price'])
+        return text
+    except Exception as err:
+        log.info('{}'.format(err.message))
+
+
+def actions():
+    outurl1 = 'http://www.belorusneft.by/beloil-map/ussd/actions'
+    try:
+        r3 = requests.get(outurl1)
+        text = str(r3.json()['date']) + '\n'
+        for i in r3.json()['actions']:
+            text += '{}\n'.format(unidecode(i['description']))
+            return text
+    except Exception as err:
+        log.info(err.message)

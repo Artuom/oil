@@ -118,7 +118,11 @@ class Subscriber:
             #
             # actions and discounts for fuel
             elif self.level == '03':
-                text = 'You will receive an sms. Currently unavailable.'
+                try:
+                    text = db_interaction.prices()
+                except Exception as err:
+                    log.info('error while prices request: {} for {}'.format(err.message, self.msisdn))
+                    text = "Nevozmozhno poluchit' info po cenam"
                 sop = 0x03
                 log.info('level = {}: {}'.format(self.level, text))
                 return text, sop
