@@ -111,10 +111,11 @@ class Subscriber:
                 my_str_lots = ''
                 try:
                     for num, prize in self.prize_dict.iteritems():
-                        my_str_lots += '{}:{}\n'.format(num, prize['prizename'])
+                        # my_str_lots += '{}:{}\n'.format(num, prize['prizename'])
+                        my_str_lots = ''
                 except Exception as err:
                     log.info('error in prize dict iter. no prizes: {}'.format(err.message))
-                    my_str_lots = 'Na tekuchiy moment net prizov.'
+                    my_str_lots = ''
                 text = '{}\n{}\n0 - Nazad'.format(self.actions, my_str_lots)
                 sop = 0x02
                 log.info('level = {}: {}'.format(self.level, text))
