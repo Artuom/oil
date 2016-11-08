@@ -114,7 +114,7 @@ class Subscriber:
                         my_str_lots += '{}:{}\n'.format(num, prize['prizename'])
                 except Exception as err:
                     log.info('error in prize dict iter. no prizes: {}'.format(err.message))
-                    text = 'Na tekuchiy moment net prizov.'
+                    my_str_lots = 'Na tekuchiy moment net prizov.'
                 text = '{}\n{}\n0 - Nazad'.format(self.actions, my_str_lots)
                 sop = 0x02
                 log.info('level = {}: {}'.format(self.level, text))
