@@ -140,6 +140,7 @@ def actions():
         text = str(r3.json()['date']) + '\n'
         for i in r3.json()['actions']:
             text += '{}\n'.format(unidecode(i['description']))
-            return text
     except Exception as err:
         log.info(err.message)
+        text = 'Net akcii. Poprobyite pozhe.\n'
+    return text

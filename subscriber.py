@@ -26,6 +26,7 @@ class Subscriber:
         self.subscriber_cards_dict = db_interaction.msisdn_cards(self.msisdn)  # выборка из БД
         # {1: {u'cardcode': u'2000000045665', u'score': u'600', u'id': u'0'}, 2: {u'cardcode': u'2000002456650',
         # u'score': u'400', u'id': u'1'}}
+        self.actions = db_interaction.actions()
         log.info('init {}: {}'.format(self.msisdn, self.subscriber_cards_dict))
 
     def __str__(self):
@@ -110,7 +111,7 @@ class Subscriber:
                 my_str_lots = ''
                 for num, prize in self.prize_dict.iteritems():
                     my_str_lots += '{}:{}\n'.format(num, prize['prizename'])
-                text = '{}\n{}\n0 - Nazad'.format(current_date, my_str_lots)
+                text = '{}\n{}\n0 - Nazad'.format(self.actions, my_str_lots)
                 sop = 0x02
                 log.info('level = {}: {}'.format(self.level, text))
                 return text, sop

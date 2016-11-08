@@ -86,3 +86,16 @@ def prices():
         return text
     except Exception as err:
         log.info('{}'.format(err.message))
+
+
+def actions():
+    outurl1 = 'http://www.belorusneft.by/beloil-map/ussd/actions'
+    try:
+        r3 = requests.get(outurl1)
+        text = str(r3.json()['date']) + '\n'
+        for i in r3.json()['actions']:
+            text += '{}\n'.format(unidecode(i['description']))
+    except Exception as err:
+        log.info(err.message)
+        text = 'Net akcii. Poprobyite pozhe.\n'
+    return text
