@@ -8,6 +8,7 @@
 # ok
 from time import sleep
 import logging
+import logging.handlers
 import cx_Oracle
 from datetime import datetime
 import os
@@ -20,11 +21,14 @@ os.environ["NLS_LANG"] = "Russian.CL8MSWIN1251"
 cur = None
 unsuccessCount = 0
 
+# logging block
 log = logging.getLogger('db')
 log.setLevel(logging.INFO)
-hand = logging.FileHandler('db.log', 'a')
+logfile = 'db.log'
+hand = logging.handlers.TimedRotatingFileHandler(logfile, when='midnight', interval=1)
 hand.setFormatter(logging.Formatter('%(levelname)-8s [%(asctime)s] %(message)s'))
 log.addHandler(hand)
+# logging block end
 
 
 def db_connect():
@@ -125,21 +129,26 @@ def prices():
     try:
         r4 = requests.get(outurl2)
         print r4.json()['date']
-        text = str(r4.json()['date'])+'\n'
+        text = ''
         for i in r4.json()['prices']:
             text += '{} -> {} BYN\n'.format(unidecode(i['fuelname']), i['price'])
-        return text
+
     except Exception as err:
         log.info('{}'.format(err.message))
+        text = 'Net cen. Poprobyite pozhe.'
+    return text
 
 
 def actions():
     outurl1 = 'http://www.belorusneft.by/beloil-map/ussd/actions'
     try:
         r3 = requests.get(outurl1)
-        text = str(r3.json()['date']) + '\n'
+        text = ''
         for i in r3.json()['actions']:
-            text += '{}\n'.format(unidecode(i['description']))
+            if unidecode(i['description']) not in text:
+                text += '{}\n'.format(unidecode(i['description']))
+        if len(text) > 160:
+            text = text[:160]
     except Exception as err:
         log.info(err.message)
         text = 'Net akcii. Poprobyite pozhe.\n'

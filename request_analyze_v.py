@@ -7,12 +7,16 @@ import subscriber
 import ussd_submit
 # import read_json
 import logging
+import logging.handlers
 
+# logging block
 log = logging.getLogger('request_v')
 log.setLevel(logging.INFO)
-hand = logging.FileHandler('request_v.log', 'a')
+logfile = 'request_v.log'
+hand = logging.handlers.TimedRotatingFileHandler(logfile, when='midnight', interval=1)
 hand.setFormatter(logging.Formatter('%(levelname)-8s [%(asctime)s] %(message)s'))
 log.addHandler(hand)
+# logging block end
 
 list_of_objects = None
 usr_obj = 0

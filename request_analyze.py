@@ -9,12 +9,16 @@ import ussd_submit
 import os
 import shutil
 import logging
+import logging.handlers
 
+# logging block
 log = logging.getLogger('request')
 log.setLevel(logging.INFO)
-hand = logging.FileHandler('request.log', 'a')
+logfile = 'request.log'
+hand = logging.handlers.TimedRotatingFileHandler(logfile, when='midnight', interval=1)
 hand.setFormatter(logging.Formatter('%(levelname)-8s [%(asctime)s] %(message)s'))
 log.addHandler(hand)
+# logging block end
 
 list_of_objects = None
 usr_obj = 0

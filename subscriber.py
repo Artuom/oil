@@ -6,17 +6,20 @@ from datetime import datetime
 import json
 from unidecode import unidecode
 import logging
+import logging.handlers
 
 list_of_objects = []
 a = []
 daterange = ('01', '02', '03')
 
+# logging block
 log = logging.getLogger('subscriber')
 log.setLevel(logging.INFO)
-hand = logging.FileHandler('subscriber.log', 'a')
+logfile = 'subscriber.log'
+hand = logging.handlers.TimedRotatingFileHandler(logfile, when='midnight', interval=1)
 hand.setFormatter(logging.Formatter('%(levelname)-8s [%(asctime)s] %(message)s'))
 log.addHandler(hand)
-
+# logging block end
 
 class Subscriber:
     def __init__(self, msisdn):
@@ -109,6 +112,7 @@ class Subscriber:
             elif self.level == '02':
                 current_date = datetime.today().strftime('%d%m%Y')
                 my_str_lots = ''
+                """
                 try:
                     for num, prize in self.prize_dict.iteritems():
                         # my_str_lots += '{}:{}\n'.format(num, prize['prizename'])
@@ -120,7 +124,17 @@ class Subscriber:
                 sop = 0x02
                 log.info('level = {}: {}'.format(self.level, text))
                 return text, sop
+                """
+                try:
+                    text = db_interaction.actions()
+                except Exception as err:
+                    log.info('error while actions request: {} for {}'.format(err.message, self.msisdn))
+                    text = 'Net info po actiam. Poprobuite pozhe.'
+                sop = 0x03
+                log.info('level = {}: {}'.format(self.level, text))
+                return text, sop
             # lots ends
+
             #
             # actions and discounts for fuel
             elif self.level == '03':
