@@ -26,7 +26,7 @@ class Subscriber:
         self.level = ""
         self.prize_dict = db_interaction.current_lots()  # {1: {}, 2: {}, 3: {}}
         self.msisdn = msisdn
-        self.subscriber_cards_dict = db_interaction.msisdn_cards(self.msisdn)  # выборка из БД
+        self.subscriber_cards_dict = {}  # выборка из БД
         # {1: {u'cardcode': u'2000000045665', u'score': u'600', u'id': u'0'}, 2: {u'cardcode': u'2000002456650',
         # u'score': u'400', u'id': u'1'}}
         self.actions = db_interaction.actions()
@@ -90,23 +90,26 @@ class Subscriber:
             sop = 0x02
         # end first request
         elif len(self.level) == 2:
+            self.subscriber_cards_dict = db_interaction.msisdn_cards(self.msisdn)
             # level = 0x
             my_str_cards = ''
             # esli karta odna i uroven' zaprosa info po karte, podnyat' level
-            if self.subscriber_cards_dict is None:
-                my_str_cards = 'U vas net dostupnih kart.'
-                text = "{}".format(my_str_cards)
-                sop = 0x03
+            if self.level == '01':
+                self.subscriber_cards_dict = db_interaction.msisdn_cards(self.msisdn)
+                if self.subscriber_cards_dict is None:
+                    my_str_cards = 'U vas net dostupnih kart.'
+                    text = "{}".format(my_str_cards)
+                    sop = 0x03
 
-            elif len(self.subscriber_cards_dict) == 1 and self.level == '01':
-                self.level_up(1)
+                elif len(self.subscriber_cards_dict) == 1 and self.level == '01':
+                    self.level_up(1)
 
-            elif len(self.subscriber_cards_dict) != 1 and self.level == '01':
-                my_str_cards = ''
-                for num, card in self.subscriber_cards_dict.iteritems():
-                    my_str_cards += '{}: {}\n'.format(num, card['cardcode'])
-                text = "Viberete vashu kartu:\n{}".format(my_str_cards)
-                sop = 0x02
+                elif len(self.subscriber_cards_dict) != 1 and self.level == '01':
+                    my_str_cards = ''
+                    for num, card in self.subscriber_cards_dict.iteritems():
+                        my_str_cards += '{}: {}\n'.format(num, card['cardcode'])
+                    text = "Viberete vashu kartu:\n{}".format(my_str_cards)
+                    sop = 0x02
 
             # lots menu *xxx*2#
             elif self.level == '02':
