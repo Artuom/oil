@@ -90,7 +90,7 @@ class Subscriber:
             sop = 0x02
         # end first request
         elif len(self.level) == 2:
-            self.subscriber_cards_dict = db_interaction.msisdn_cards(self.msisdn)
+            # self.subscriber_cards_dict = db_interaction.msisdn_cards(self.msisdn)
             # level = 0x
             my_str_cards = ''
             # esli karta odna i uroven' zaprosa info po karte, podnyat' level
