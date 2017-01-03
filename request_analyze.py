@@ -10,11 +10,15 @@ import os
 import shutil
 import logging
 import logging.handlers
+import re
+import sys
 
+
+logname = re.findall(r'_(\w+)\.py', sys.argv[0])[0]  # ussd_[life, mts, velcom].py
 # logging block
 log = logging.getLogger('request')
 log.setLevel(logging.INFO)
-logfile = 'request.log'
+logfile = 'logs/{}_request.log'.format(logname)
 hand = logging.handlers.TimedRotatingFileHandler(logfile, when='midnight', interval=1)
 hand.setFormatter(logging.Formatter('%(levelname)-8s [%(asctime)s] %(message)s'))
 log.addHandler(hand)

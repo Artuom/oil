@@ -12,7 +12,7 @@ import logging.handlers
 # logging block
 log = logging.getLogger('request_v')
 log.setLevel(logging.INFO)
-logfile = 'request_v.log'
+logfile = 'logs/request_v.log'
 hand = logging.handlers.TimedRotatingFileHandler(logfile, when='midnight', interval=1)
 hand.setFormatter(logging.Formatter('%(levelname)-8s [%(asctime)s] %(message)s'))
 log.addHandler(hand)

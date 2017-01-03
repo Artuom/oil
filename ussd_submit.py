@@ -5,23 +5,29 @@ import smpplib.client
 import smpplib.gsm
 import smpplib.consts
 import sys
+import re
 from threading import Thread
 import subscriber
 # import read_json
 
-
-log = logging.getLogger('submit')
+logname = re.findall(r'_(\w+)\.py', sys.argv[0])[0]  # ussd_[life, mts, velcom].py
+# logging block
+log = logging.getLogger('sbm')
 log.setLevel(logging.INFO)
-hand = logging.FileHandler('submit.log', 'a')
+logfile = 'logs/{}_submit.log'.format(logname)
+hand = logging.handlers.TimedRotatingFileHandler(logfile, when='d', interval=1)
 hand.setFormatter(logging.Formatter('%(levelname)-8s [%(asctime)s] %(message)s'))
 log.addHandler(hand)
+# logging block end
 
 
 def submit(client, msisdn, src_addr, ussd_service_op, user_message_reference=None,  text=""):
     try:
+        log.info('text to submit: {}'.format(text))
         parts, encoding_flag, msg_type_flag = smpplib.gsm.make_parts(text)
-    except:
-        print parts, encoding_flag, msg_type_flag
+        parts = parts[:160]
+    except Exception as err:
+        log.info('text to submit in exception: {}'.format(text))
         text = 'Unknown error. Try later!'
         parts, encoding_flag, msg_type_flag = smpplib.gsm.make_parts(text)
     msisdn = str(msisdn)
@@ -51,5 +57,5 @@ def submit(client, msisdn, src_addr, ussd_service_op, user_message_reference=Non
             ussd_service_op=ussd_service_op,
             user_message_reference=user_message_reference,
         )
-    log.info('{}: {}'.format(pdu.destination_addr, pdu.short_message))
+    log.info('text was sent: {}: {}'.format(pdu.destination_addr, pdu.short_message))
     return 1

@@ -14,6 +14,14 @@ import datetime
 
 
 # logging.basicConfig(level='DEBUG')
+# logging block
+log = logging.getLogger('mreq')
+log.setLevel(logging.INFO)
+logfile = 'logs/mts_request.log'
+hand = logging.handlers.TimedRotatingFileHandler(logfile, when='d', interval=1)
+hand.setFormatter(logging.Formatter('%(levelname)-8s [%(asctime)s] %(message)s'))
+log.addHandler(hand)
+# logging block end
 
 def settings():
     f = open('settings', 'r')
@@ -33,19 +41,20 @@ def connect():
         client.connect()   # TCP connection
         client.bind_transceiver(system_id=sysId, password=passwd)   # SMPP connection
     except smpplib.exceptions.PDUError as pduer:
-        print pduer
+        log.info('error while trying to connect: {}'.format(pduer))
         return 0
     except smpplib.exceptions.ConnectionError as coner:
-        print coner
+        log.info('error while trying to connect: {}'.format(coner))
         return 0
     except smpplib.exceptions.UnknownCommandError as unkn:
-        print unkn
+        log.info('error while trying to connect: {}'.format(unkn))
         return 0
     return client
 
 
 def send_info(pdu):
     if pdu.command == "deliver_sm":
+        log.info(pdu)
         request_analyze.request(client, pdu)
 
 
@@ -70,7 +79,8 @@ while 1:
         else:
             time.sleep(20)
             continue
-    except smpplib.exceptions.ConnectionError:
+    except Exception as err:
+        log.info('Error in connection: '.format(err.message))
         time.sleep(20)
         continue
 

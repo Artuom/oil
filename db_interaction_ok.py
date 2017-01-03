@@ -15,16 +15,19 @@ import os
 from unidecode import unidecode
 import json
 import requests
+import sys
+import re
 
 os.environ["NLS_LANG"] = "Russian.CL8MSWIN1251"
 
 cur = None
 unsuccessCount = 0
 
+logname = re.findall(r'_(\w+)\.py', sys.argv[0])[0]  # ussd_[life, mts, velcom].py
 # logging block
 log = logging.getLogger('db')
 log.setLevel(logging.INFO)
-logfile = 'db.log'
+logfile = 'logs/{}_db.log'.format(logname)
 hand = logging.handlers.TimedRotatingFileHandler(logfile, when='midnight', interval=1)
 hand.setFormatter(logging.Formatter('%(levelname)-8s [%(asctime)s] %(message)s'))
 log.addHandler(hand)
