@@ -56,7 +56,7 @@ def connect():
 
 
 def send_info(pdu):
-    log.info(pdu.__dict__())
+    log.info(pdu.__dict__)
     request_analyze.request(client, pdu)
 
 
@@ -79,7 +79,7 @@ while 1:
             time.sleep(20)
             continue
     except Exception as err:
-        log.info('Error in connection: '.format(err.message))
+        log.info('Error in connection: {}'.format(err.message))
         time.sleep(20)
         continue
 
