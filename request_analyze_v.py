@@ -94,7 +94,9 @@ def response(client, msisdn=0, src_addr=0, usr_obj=0, user_message_reference=Non
         text_request = usr_obj.answer_text()
         text = text_request[0]
         ussd_service_op = text_request[1]
+        log.info('text: {}, sop: {}'.format(text, ussd_service_op))
     except Exception as err:
+        log.info('error in request analyze: {}'.format(err.message))
         text = "Unknown error. Try later!" + str(err)
         ussd_service_op = 0x03
     log.info('to submit: {}|{}|{}|{}|{}'.format(msisdn, src_addr, ussd_service_op, user_message_reference, text))

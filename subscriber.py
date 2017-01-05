@@ -7,19 +7,24 @@ import json
 from unidecode import unidecode
 import logging
 import logging.handlers
+import re
+import sys
 
 list_of_objects = []
 a = []
 daterange = ('01', '02', '03')
 
+
+logname = re.findall(r'_(\w+)\.py', sys.argv[0])[0]  # ussd_[life, mts, velcom].py
 # logging block
 log = logging.getLogger('subscriber')
 log.setLevel(logging.INFO)
-logfile = 'subscriber.log'
+logfile = 'logs/{}_subscr.log'.format(logname)
 hand = logging.handlers.TimedRotatingFileHandler(logfile, when='midnight', interval=1)
 hand.setFormatter(logging.Formatter('%(levelname)-8s [%(asctime)s] %(message)s'))
 log.addHandler(hand)
 # logging block end
+
 
 class Subscriber:
     def __init__(self, msisdn):
@@ -110,6 +115,7 @@ class Subscriber:
                         my_str_cards += '{}: {}\n'.format(num, card['cardcode'])
                     text = "Viberete vashu kartu:\n{}".format(my_str_cards)
                     sop = 0x02
+                    log.info('level = {}: {}'.format(self.level, text))
 
             # lots menu *xxx*2#
             elif self.level == '02':
@@ -134,7 +140,7 @@ class Subscriber:
                     log.info('error while actions request: {} for {}'.format(err.message, self.msisdn))
                     text = 'Net info po actiam. Poprobuite pozhe.'
                 sop = 0x03
-                log.info('level = {}: {}'.format(self.level, text))
+                log.info('menu -> 2, level = {}: {}'.format(self.level, text))
                 return text, sop
             # lots ends
 
@@ -147,7 +153,7 @@ class Subscriber:
                     log.info('error while prices request: {} for {}'.format(err.message, self.msisdn))
                     text = "Nevozmozhno poluchit' info po cenam"
                 sop = 0x03
-                log.info('level = {}: {}'.format(self.level, text))
+                log.info('menu -> 3, level = {}: {}'.format(self.level, text))
                 return text, sop
 
         # card selection
