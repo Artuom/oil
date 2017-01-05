@@ -47,8 +47,8 @@ def submit(client, msisdn, src_addr, ussd_service_op, user_message_reference=Non
     for part in parts:
         pdu = client.send_message(
             service_type='USSD',
-            source_addr_ton=smpplib.consts.SMPP_TON_INTL,
-            source_addr_npi=smpplib.consts.SMPP_NPI_ISDN,
+            source_addr_ton=smpplib.consts.SMPP_TON_UNK,
+            source_addr_npi=smpplib.consts.SMPP_NPI_UNK,
             source_addr=src_addr,
             dest_addr_ton=smpplib.consts.SMPP_TON_INTL,
             dest_addr_npi=smpplib.consts.SMPP_NPI_ISDN,
