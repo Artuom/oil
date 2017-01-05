@@ -23,6 +23,7 @@ hand.setFormatter(logging.Formatter('%(levelname)-8s [%(asctime)s] %(message)s')
 log.addHandler(hand)
 # logging block end
 
+
 def settings():
     f = open('settings', 'r')
     ip = f.readline().rstrip()
