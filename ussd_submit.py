@@ -27,7 +27,7 @@ def submit(client, msisdn, src_addr, ussd_service_op, user_message_reference=Non
         parts, encoding_flag, msg_type_flag = smpplib.gsm.make_parts(text)
         parts = parts[:160]
     except Exception as err:
-        log.info('text to submit in exception: {}'.format(text))
+        log.info('text to submit in exception: {}'.format(err.message))
         text = 'Unknown error. Try later!'
         parts, encoding_flag, msg_type_flag = smpplib.gsm.make_parts(text)
     msisdn = str(msisdn)
