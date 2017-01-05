@@ -140,7 +140,7 @@ class Subscriber:
                     log.info('error while actions request: {} for {}'.format(err.message, self.msisdn))
                     text = 'Net info po actiam. Poprobuite pozhe.'
                 sop = 0x03
-                log.info('menu -> 2, level = {}: {}'.format(self.level, text))
+                log.info('menu -> 2, level = {} {} is returned:\n{}'.format(self.level, self.msisdn, text))
                 return text, sop
             # lots ends
 
@@ -153,7 +153,8 @@ class Subscriber:
                     log.info('error while prices request: {} for {}'.format(err.message, self.msisdn))
                     text = "Nevozmozhno poluchit' info po cenam"
                 sop = 0x03
-                log.info('menu -> 3, level = {}: {}'.format(self.level, text))
+                # log.info('{} is returned the text:\n{}\nsop: {}'.format(self.msisdn, text, sop))
+                log.info('menu -> 3, level = {} {} is returned:\n{}'.format(self.level, self.msisdn, text))
                 return text, sop
 
         # card selection
@@ -280,7 +281,7 @@ class Subscriber:
             else:
                 text = "Otmeneno pol'zovatelem"
                 sop = 0x03
-        log.info('{} is returned the text:\n{}\nsop: {}'.format(self.msisdn, text, sop))
+        log.info('level: {} {} is returned the text:\n{}\nsop: {}'.format(self.level, self.msisdn, text, sop))
         return text, sop
 
     def __del__(self):
