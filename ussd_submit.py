@@ -23,9 +23,12 @@ log.addHandler(hand)
 
 def submit(client, msisdn, src_addr, ussd_service_op, user_message_reference=None,  text=""):
     try:
-        log.info('text length {} to submit: {}'.format(len(text), text))
-        if len(text) > 160:
-            text = text[:160]
+        if text is not None:
+            log.info('text length {} to submit: {}'.format(len(text), text))
+            if len(text) > 160:
+                text = text[:160]
+        else:
+            log.info('text length {} to submit: {}'.format('text is None', text))
         parts, encoding_flag, msg_type_flag = smpplib.gsm.make_parts(text)
     except Exception as err:
         log.info('text to submit in exception: {}'.format(err.message))
