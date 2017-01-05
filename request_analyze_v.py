@@ -12,7 +12,7 @@ import logging.handlers
 # logging block
 log = logging.getLogger('request_v')
 log.setLevel(logging.INFO)
-logfile = 'logs/reqparse_v.log'
+logfile = 'logs/velcom_reqparse.log'
 hand = logging.handlers.TimedRotatingFileHandler(logfile, when='midnight', interval=1)
 hand.setFormatter(logging.Formatter('%(levelname)-8s [%(asctime)s] %(message)s'))
 log.addHandler(hand)
@@ -27,7 +27,7 @@ def request(client, pdu):
     global usr_obj
     global list_of_objects
     log.info(pdu)
-    if str(pdu.source_addr) in list_of_objects.keys() and pdu.short_message != service_key and pdu.ussd_service_op != '33':
+    if str(pdu.source_addr) in list_of_objects.keys() and pdu.short_message != service_key and pdu.ussd_service_op != '33' and pdu.short_message != '':
         usr_obj = list_of_objects[str(pdu.source_addr)]
     elif pdu.ussd_service_op != '33':
         usr_obj = subscriber.Subscriber(pdu.source_addr)  # first request. object of subscriber class
