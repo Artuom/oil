@@ -23,7 +23,9 @@ log.addHandler(hand)
 
 def submit(client, msisdn, src_addr, ussd_service_op, user_message_reference=None,  text=""):
     try:
-        log.info('text to submit: {}'.format(text))
+        log.info('text length {} to submit: {}'.format(len(text), text))
+        if len(text) > 160:
+            text = text[:160]
         parts, encoding_flag, msg_type_flag = smpplib.gsm.make_parts(text)
     except Exception as err:
         log.info('text to submit in exception: {}'.format(err.message))
@@ -39,7 +41,7 @@ def submit(client, msisdn, src_addr, ussd_service_op, user_message_reference=Non
     if user_message_reference:
         user_message_reference = hex_val(user_message_reference)
 
-    for part in parts[0]:
+    for part in parts:
         pdu = client.send_message(
             service_type='USSD',
             source_addr_ton=smpplib.consts.SMPP_TON_INTL,
