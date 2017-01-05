@@ -53,7 +53,7 @@ def connect():
 
 
 def send_info(pdu):
-    log.info(pdu)
+    log.info(pdu.__dict__())
     request_analyze_v.request(client, pdu)
 
 

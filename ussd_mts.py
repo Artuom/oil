@@ -54,7 +54,7 @@ def connect():
 
 def send_info(pdu):
     if pdu.command == "deliver_sm":
-        log.info(pdu)
+        log.info(pdu.__dict__())
         request_analyze.request(client, pdu)
 
 
