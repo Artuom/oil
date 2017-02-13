@@ -101,7 +101,7 @@ def buyprize(card_number, lot_id):
     # '{"date":"05.10.2016 13:46:34","cardcode":"2000002456650","prizenum":"1","buyresult":"1",
     # "resultmessage":"▒▒▒▒▒▒▒▒▒▒ ▒▒▒▒ ▒▒▒▒▒▒, ▒▒▒ ▒▒▒▒▒▒▒ ▒ ▒▒▒▒▒▒▒ ▒▒▒▒▒▒."}'
     result = cx_Oracle.FIXED_CHAR
-    json_buy_result = json.loads(cur.callfunc('RCD.SFLotsUSSDBuy', result, [card_number, 1]).rstrip().decode('cp1251'))
+    json_buy_result = json.loads(cur.callfunc('RCD.SFLotsUSSDBuy', result, [card_number, lot_id]).rstrip().decode('cp1251'))
     log.info('{}'.format(json_buy_result))
     return json_buy_result
 
