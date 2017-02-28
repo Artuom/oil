@@ -156,3 +156,33 @@ def actions():
         log.info(err.message)
         text = 'Net akcii. Poprobyite pozhe.\n'
     return text
+
+
+def prices_sms():
+    outurl2 = 'http://www.belorusneft.by/beloil-map/ussd/prices'
+    try:
+        r4 = requests.get(outurl2)
+        print r4.json()['date']
+        text = ''
+        for i in r4.json()['prices']:
+            text += u'{} -> {} BYN\n'.format((i['fuelname']), i['price'])
+    except Exception as err:
+        text = 'Net cen. Poprobyite pozhe.'
+
+    return text
+
+
+def actions_sms():
+    outurl1 = 'http://www.belorusneft.by/beloil-map/ussd/actions'
+    try:
+        r3 = requests.get(outurl1)
+        text = ''
+        for i in r3.json()['actions']:
+            if (i['description']) not in text:
+                text += u'{}\n'.format((i['description']))
+        if len(text) > 160:
+            text = text[:160]
+    except Exception as err:
+        text = 'Net akcii. Poprobyite pozhe.\n'
+
+    return text
