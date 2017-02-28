@@ -9,6 +9,7 @@ import logging
 import logging.handlers
 import re
 import sys
+import kannel_send_sms
 
 list_of_objects = []
 a = []
@@ -121,39 +122,55 @@ class Subscriber:
             elif self.level == '02':
                 current_date = datetime.today().strftime('%d%m%Y')
                 my_str_lots = ''
-                """
-                try:
-                    for num, prize in self.prize_dict.iteritems():
-                        # my_str_lots += '{}:{}\n'.format(num, prize['prizename'])
-                        my_str_lots = ''
-                except Exception as err:
-                    log.info('error in prize dict iter. no prizes: {}'.format(err.message))
-                    my_str_lots = ''
-                text = '{}\n{}\n0 - Nazad'.format(self.actions, my_str_lots)
-                sop = 0x02
-                log.info('level = {}: {}'.format(self.level, text))
-                return text, sop
-                """
-                try:
-                    text = db_interaction.actions()
-                except Exception as err:
-                    log.info('error while actions request: {} for {}'.format(err.message, self.msisdn))
-                    text = 'Net info po actiam. Poprobuite pozhe.'
+                if logname != 'life' or self.msisdn != '375259092515':
+                    try:
+                        text = db_interaction.actions()
+                    except Exception as err:
+                        log.info('error while actions request: {} for {}'.format(err.message, self.msisdn))
+                        text = 'Net info po actiam. Poprobuite pozhe.'
+                else:
+                    # sms
+                    try:
+                        text_to_sms = db_interaction.actions()
+                        kannel_send_sms(self.msisdn, text_to_sms, logname)
+                    except Exception as err:
+                        log.info('error in sending sms level 02 => {}'.format(err.message))
+
+                    try:
+                        text = 'Vam budet vislano SMS s informaciey.'
+                    except Exception as err:
+                        log.info('error while actions request: {} for {}'.format(err.message, self.msisdn))
+                        text = 'Net info po akciam. Poprobuite pozhe.'
                 sop = 0x03
                 log.info('menu -> 2, level = {} {} is returned:\n{}'.format(self.level, self.msisdn, text))
                 return text, sop
+                # sms realization
+
             # lots ends
 
             #
             # actions and discounts for fuel
             elif self.level == '03':
-                try:
-                    text = db_interaction.prices()
-                except Exception as err:
-                    log.info('error while prices request: {} for {}'.format(err.message, self.msisdn))
-                    text = "Nevozmozhno poluchit' info po cenam"
+                if logname != 'life' or self.msisdn != '375259092515':
+                    try:
+                        text = db_interaction.prices()
+                    except Exception as err:
+                        log.info('error while prices request: {} for {}'.format(err.message, self.msisdn))
+                        text = "Nevozmozhno poluchit' info po cenam"
+
+                    # log.info('{} is returned the text:\n{}\nsop: {}'.format(self.msisdn, text, sop))
+                else:
+                    try:
+                        text_to_sms = db_interaction.prices()
+                        kannel_send_sms(self.msisdn, text_to_sms, logname)
+                    except Exception as err:
+                        log.info('error in sending sms level 03 => {}'.format(err.message))
+                    try:
+                        text = 'Vam budet vislano SMS s informaciey.'
+                    except Exception as err:
+                        log.info('error while actions request: {} for {}'.format(err.message, self.msisdn))
+                        text = 'Net info po akciam. Poprobuite pozhe.'
                 sop = 0x03
-                # log.info('{} is returned the text:\n{}\nsop: {}'.format(self.msisdn, text, sop))
                 log.info('menu -> 3, level = {} {} is returned:\n{}'.format(self.level, self.msisdn, text))
                 return text, sop
 
@@ -172,7 +189,7 @@ class Subscriber:
                            'ogranicheno. Povtorite popitku posle 3-go chisla.\n0 - Nazad'.format(card['cardcode'])
                     sop = 0x02
                 elif self.prize_dict is None:
-                    text = '{}\n1. Podrobnaya info po karte\nNa danniy moment net akcii\n0 - Nazad'.format(
+                    text = '{}\n1. Podrobnaya info po karte\n0 - Nazad'.format(
                         card['cardcode'])
                     sop = 0x02
                 else:
@@ -220,7 +237,7 @@ class Subscriber:
                         disc=discount, first_count=count1, second_count=count2, **json_card_info)
                 elif self.prize_dict is None:
                     text = 'Skidka {disc}%\nPriobreteno soput.tovarov: {goods}rub\nBalli: {score}\nShansi priz 1: {first_count}' \
-                           '\nShansi priz 2: {second_count}\nNet akcii'.format(
+                           '\nShansi priz 2: {second_count}\n'.format(
                         disc=discount, first_count=count1, second_count=count2, **json_card_info)
                 else:
                     text = 'Skidka {disc}%\nPriobreteno soput.tovarov: {goods}rub\nBalli: {score}\nShansi priz 1: {first_count}' \
