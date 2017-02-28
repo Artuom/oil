@@ -122,7 +122,7 @@ class Subscriber:
             elif self.level == '02':
                 current_date = datetime.today().strftime('%d%m%Y')
                 my_str_lots = ''
-                if logname != 'life' or self.msisdn != '375259092515':
+                if logname != 'life' and self.msisdn != '375259092515':
                     try:
                         text = db_interaction.actions()
                     except Exception as err:
@@ -151,7 +151,7 @@ class Subscriber:
             #
             # actions and discounts for fuel
             elif self.level == '03':
-                if logname != 'life' or self.msisdn != '375259092515':
+                if logname != 'life' and self.msisdn != '375259092515':
                     try:
                         text = db_interaction.prices()
                     except Exception as err:
