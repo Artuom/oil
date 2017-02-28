@@ -168,7 +168,6 @@ def prices_sms():
             text += u'{} -> {} BYN\n'.format((i['fuelname']), i['price'])
     except Exception as err:
         text = 'Net cen. Poprobyite pozhe.'
-
     return text
 
 
@@ -184,5 +183,4 @@ def actions_sms():
             text = text[:160]
     except Exception as err:
         text = 'Net akcii. Poprobyite pozhe.\n'
-
     return text

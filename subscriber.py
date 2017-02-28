@@ -134,7 +134,7 @@ class Subscriber:
                         text_to_sms = db_interaction.actions_sms()
                         kannel_send_sms.send_sms(self.msisdn, text_to_sms, logname)
                     except Exception as err:
-                        log.info('error in sending sms level 02 => {}'.format(err.message))
+                        log.info('error in sending sms level 02 => {}'.format(err))
 
                     try:
                         text = 'Vam budet vislano SMS s informaciey.'
@@ -164,7 +164,7 @@ class Subscriber:
                         text_to_sms = db_interaction.prices_sms()
                         kannel_send_sms.send_sms(self.msisdn, text_to_sms, logname)
                     except Exception as err:
-                        log.info('error in sending sms level 03 => {}'.format(err.message))
+                        log.info('error in sending sms level 03 => {}'.format(err))
                     try:
                         text = 'Vam budet vislano SMS s informaciey.'
                     except Exception as err:
