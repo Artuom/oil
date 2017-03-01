@@ -56,7 +56,7 @@ def request(client, pdu):
                     pdu.ussd_service_op is not None and int(pdu.ussd_service_op) == 19):  # final confirmation
         log.info('{}|{}|{}|{}'.format(str(pdu.source_addr), str(pdu.short_message), str(pdu.ussd_service_op), str(usr_obj.level)))
 
-        response(client, pdu.source_addr, pdu.destination_addr, usr_obj, pdu.user_message_reference, 'final19')
+        response(client, pdu.source_addr, pdu.destination_addr, usr_obj, pdu.user_message_reference, 'final')
         del list_of_objects[str(pdu.source_addr)]
     else:  # rejected from subscriber side, session ending
         log.info('Rejected by {}'.format(pdu.source_addr))
@@ -75,15 +75,17 @@ def response(client, msisdn=0, src_addr=0, usr_obj=0, user_message_reference=Non
     ussd_service_op = 0x02
     if srctext == "":
         usr_obj.level_up(0)
-    elif srctext != "":
+    elif srctext != "" and srctext != 'final':
         if int(srctext) == 0:
             usr_obj.level_down()
         else:
             usr_obj.level_up(srctext)
     else:
-        if srctext == 'final19':
+        if srctext == 'final':
             text = ''
             ussd_service_op = 0x17
+            ussd_submit.submit(client, msisdn, src_addr, ussd_service_op, user_message_reference, text)
+            return 1
         else:
             text = "Vash vibor prinyat"
             ussd_service_op = 0x03
