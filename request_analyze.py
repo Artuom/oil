@@ -55,6 +55,8 @@ def request(client, pdu):
     elif pdu.command == "deliver_sm" and (
                     pdu.ussd_service_op is not None and int(pdu.ussd_service_op) == 19):  # final confirmation
         log.info('{}|{}|{}|{}'.format(str(pdu.source_addr), str(pdu.short_message), str(pdu.ussd_service_op), str(usr_obj.level)))
+
+        response(client, pdu.source_addr, pdu.destination_addr, usr_obj, pdu.user_message_reference, 'final19')
         del list_of_objects[str(pdu.source_addr)]
     else:  # rejected from subscriber side, session ending
         log.info('Rejected by {}'.format(pdu.source_addr))
@@ -79,8 +81,12 @@ def response(client, msisdn=0, src_addr=0, usr_obj=0, user_message_reference=Non
         else:
             usr_obj.level_up(srctext)
     else:
-        text = "Vash vibor prinyat"
-        ussd_service_op = 0x03
+        if srctext == 'final19':
+            text = ''
+            ussd_service_op = 0x17
+        else:
+            text = "Vash vibor prinyat"
+            ussd_service_op = 0x03
 
     # print "Уровень ветки: %s" % usr_obj.level
 
