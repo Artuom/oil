@@ -83,7 +83,7 @@ def response(client, msisdn=0, src_addr=0, usr_obj=0, user_message_reference=Non
     else:
         if srctext == 'final':
             text = ''
-            ussd_service_op = 0x17
+            ussd_service_op = 0x11  # HEX represenataion of dec 17
             ussd_submit.submit(client, msisdn, src_addr, ussd_service_op, user_message_reference, text)
             return 1
         else:
