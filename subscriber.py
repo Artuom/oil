@@ -151,7 +151,7 @@ class Subscriber:
             #
             # actions and discounts for fuel
             elif self.level == '03':
-                if logname != 'life' and self.msisdn != '375259092515':
+                if logname != 'life' and logname != 'velcom':
                     try:
                         text = db_interaction.prices()
                     except Exception as err:
