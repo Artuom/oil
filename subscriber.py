@@ -122,7 +122,7 @@ class Subscriber:
             elif self.level == '02':
                 current_date = datetime.today().strftime('%d%m%Y')
                 my_str_lots = ''
-                if logname != 'life' and self.msisdn != '375259092515':
+                if logname != 'life' and logname != 'velcom' and self.msisdn != '375259092515':
                     try:
                         text = db_interaction.actions()
                     except Exception as err:
@@ -261,7 +261,7 @@ class Subscriber:
                 if str(date) in daterange or self.prize_dict is None:
                     text, sop = self.error_msg()
                 else:
-                    text = 'Priobresti shans na priz {}\n1.Da\n0.Net'.format(
+                    text = 'Priobresti shans na priz {}\n1. Da\n0. Net'.format(
                         self.prize_dict[int(chance_id)]['prizename'])
                     sop = 0x02
             except Exception as err:
