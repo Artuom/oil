@@ -11,6 +11,7 @@ from time import sleep
 from datetime import datetime
 import os
 from unidecode import unidecode
+import requests
 import json
 
 os.environ["NLS_LANG"] = "Russian.CL8MSWIN1251"
@@ -53,8 +54,8 @@ def msisdn_cards(msisdn):
     print dict(enumerate(phone['cardlist'], 1))
     """
     # 2: {u'cardcode': u'2000002456650', u'score': u'400', u'id': u'1'}
-    # subscriber_cards_dict = {1: {u'cardcode': u'2000000045665', u'score': u'600', u'id': u'0'}, }
-    subscriber_cards_dict = None
+    subscriber_cards_dict = {1: {u'cardcode': u'2000000045665', u'score': u'600', u'id': u'0'}, }
+    # subscriber_cards_dict = None
     return subscriber_cards_dict
 
 

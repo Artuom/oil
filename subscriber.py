@@ -20,7 +20,8 @@ logname = re.findall(r'_(\w+)\.py', sys.argv[0])[0]  # ussd_[life, mts, velcom].
 # logging block
 log = logging.getLogger('subscriber')
 log.setLevel(logging.INFO)
-logfile = 'logs/{}_subscr.log'.format(logname)
+# logfile = 'logs/{}_subscr.log'.format(logname)
+logfile = '{}_subscr.log'.format(logname)
 hand = logging.handlers.TimedRotatingFileHandler(logfile, when='midnight', interval=1)
 hand.setFormatter(logging.Formatter('%(levelname)-8s [%(asctime)s] %(message)s'))
 log.addHandler(hand)
@@ -56,17 +57,20 @@ class Subscriber:
             self.level += str(level)
 
     def level_down(self, level=None):
-        if len(self.subscriber_cards_dict) == 1 and len(self.level) != 2 and len(self.level) != 3:
-            self.level = '01'
-        elif len(self.level) == 2:
-            self.level = '0'
-        elif len(self.level) == 3:
-            if len(self.subscriber_cards_dict) == 1:
+        if level is None:
+            if len(self.subscriber_cards_dict) == 1 and len(self.level) != 2 and len(self.level) != 3:
+                self.level = '01'
+            elif len(self.level) == 2:
                 self.level = '0'
+            elif len(self.level) == 3:
+                if len(self.subscriber_cards_dict) == 1:
+                    self.level = '0'
+                else:
+                    self.level = self.level[:2]
             else:
-                self.level = self.level[:2]
+                self.level = self.level[:3]
         else:
-            self.level = self.level[:3]
+            self.level = level
 
     def make_change(self, value):
         # update subs_info with value where msisdn=self.msisdn
@@ -122,7 +126,7 @@ class Subscriber:
             elif self.level == '02':
                 current_date = datetime.today().strftime('%d%m%Y')
                 my_str_lots = ''
-                if logname != 'life' and self.msisdn != '375259092515':
+                if logname != 'life' and logname != 'velcom':  # were changed
                     try:
                         text = db_interaction.actions()
                     except Exception as err:
@@ -172,6 +176,13 @@ class Subscriber:
                         text = 'Net info po akciam. Poprobuite pozhe.'
                 sop = 0x03
                 log.info('menu -> 3, level = {} {} is returned:\n{}'.format(self.level, self.msisdn, text))
+                return text, sop
+
+            elif self.level not in ['01', '02', '03']:
+                # incorrect input
+                self.level_down()
+                text = "Neverniy vvod.\n" + self.answer_text()[0]
+                sop = 0x02
                 return text, sop
 
         # card selection
@@ -231,23 +242,23 @@ class Subscriber:
                     discount = json_card_info['discount']
 
                 if datetime.today().strftime('%d') in daterange:
-                    text = 'Skidka {disc}%\nPriobreteno soput.tovarov: {goods}rub\nBalli: {score}\nShansi priz 1: {first_count}' \
+                    text = 'Skidka {disc}%\nPriobr. soput.tovarov: {goods}rub\nBalli: {score}\nShansi priz 1: {first_count}' \
                            '\nShansi priz 2: {second_count}\nS 1 po 3 chislo mesyaca priobretenie shansov ' \
                            'ogranicheno.'.format(
                         disc=discount, first_count=count1, second_count=count2, **json_card_info)
                 elif self.prize_dict is None:
-                    text = 'Skidka {disc}%\nPriobreteno soput.tovarov: {goods}rub\nBalli: {score}\nShansi priz 1: {first_count}' \
+                    text = 'Skidka {disc}%\nPriobr. soput.tovarov: {goods}rub\nBalli: {score}\nShansi priz 1: {first_count}' \
                            '\nShansi priz 2: {second_count}\n'.format(
                         disc=discount, first_count=count1, second_count=count2, **json_card_info)
                 else:
-                    text = 'Skidka {disc}%\nPriobreteno soput.tovarov: {goods}rub\nBalli: {score}\nShansi priz 1: {first_count}' \
+                    text = 'Skidka {disc}%\nPriobr. soput.tovarov: {goods}rub\nBalli: {score}\nShansi priz 1: {first_count}' \
                           '\nShansi priz 2: {second_count}\n1.Priobresti shans na priz 1\n2.Priobresti shans na priz 2'.format(
                         disc=discount, first_count=count1, second_count=count2, **json_card_info)
                 sop = 0x02
 
             else:
-                self.level_up('1')
-                self.lvel_up(answer - 1)
+                # self.level_up('1')
+                self.level_up(answer - 1)
 
         elif len(self.level) == 5:
             # 01xyz
@@ -256,18 +267,25 @@ class Subscriber:
             # z = [4] - shansa po y-1(id shansa)
             request_card_id = int(self.level[2])
             chance_id = int(self.level[4])  # 1 - info po karte, 2,3,4 cifri vibora = 1,2,3 id shansa
-            date = datetime.today().strftime('%d')
             try:
-                if str(date) in daterange or self.prize_dict is None:
-                    text, sop = self.error_msg()
-                else:
-                    text = 'Priobresti shans na priz {}\n1.Da\n0.Net'.format(
-                        self.prize_dict[int(chance_id)]['prizename'])
-                    sop = 0x02
-            except Exception as err:
-                text = 'Unknown error. Try later.'
-                sop = 0x03
-                log.info('error: {}, msisdn: {}, level: {}'.format(err.message, self.msisdn, self.level))
+                if self.prize_dict[int(chance_id)]:
+                    date = datetime.today().strftime('%d')
+                    try:
+                        if str(date) in daterange or self.prize_dict is None:
+                            text, sop = self.error_msg()
+                        else:
+                            text = 'Priobresti shans na priz {} - {}\n1. Da\n0. Net'.format(chance_id,
+                                self.prize_dict[int(chance_id)]['prizename'])
+                            sop = 0x02
+                    except Exception as err:
+                        text = 'Unknown error. Try later.'
+                        sop = 0x03
+                        log.info('error: {}, msisdn: {}, level: {}'.format(err.message, self.msisdn, self.level))
+            except KeyError:
+                self.level_down(self.level[:-1])
+                text = ('Neverniy vvod!\n' + self.answer_text()[0])[:160]
+                sop = 0x02
+
 
         elif len(self.level) == 6:
             request_card_id = int(self.level[2])
@@ -284,7 +302,7 @@ class Subscriber:
                     sop = 0x03
                 elif change_result == 0 and json_buy_result['buyresult'] != '1':
                     self.subscriber_cards_dict = db_interaction.msisdn_cards(self.msisdn)
-                    text = 'Vi priobreli shans na priz {} {}\nPriobresti esche shans?\n1.Da, na priz 1\n2.Da, na priz ' \
+                    text = 'Vi priobreli shans na priz {} {}\nPriobresti esche shans?\n1. Da, na priz 1\n2. Da, na priz ' \
                            '2'.format(json_buy_result['prizenum'], self.prize_dict[int(
                         json_buy_result['prizenum'])]['prizename'])
                     sop = 0x02
