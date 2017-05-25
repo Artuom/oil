@@ -13,11 +13,25 @@ import os
 from unidecode import unidecode
 import requests
 import json
+import logging.handlers
+import re
+import sys
 
 os.environ["NLS_LANG"] = "Russian.CL8MSWIN1251"
 a = []
 cur = None
 unsuccessCount = 0
+
+
+logname = re.findall(r'_(\w+)\.py', sys.argv[0])[0]  # ussd_[life, mts, velcom].py
+# logging block
+log = logging.getLogger('subscriber')
+log.setLevel(logging.INFO)
+# logfile = 'logs/{}_subscr.log'.format(logname)
+logfile = '{}_subscr.log'.format(logname)
+hand = logging.handlers.TimedRotatingFileHandler(logfile, when='midnight', interval=1)
+hand.setFormatter(logging.Formatter('%(levelname)-8s [%(asctime)s] %(message)s'))
+log.addHandler(hand)
 
 
 def db_connect():
