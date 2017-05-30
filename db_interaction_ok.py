@@ -22,7 +22,6 @@ os.environ["NLS_LANG"] = "Russian.CL8MSWIN1251"
 
 cur = None
 unsuccessCount = 0
-
 logname = re.findall(r'_(\w+)\.py', sys.argv[0])[0]  # ussd_[life, mts, velcom].py
 # logging block
 log = logging.getLogger('db')
@@ -44,7 +43,6 @@ def db_connect():
         log.info('problem while connecting to db.\nerror\n {}'.format(err))
         sleep(10)
         db_connect()
-
 
 db_connect()
 
