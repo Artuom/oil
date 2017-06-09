@@ -32,7 +32,7 @@ service_key = "*226#"
 def request(client, pdu):
     global usr_obj
     global list_of_objects
-    log.info(pdu)
+    # log.info(pdu)
     if str(pdu.source_addr) in list_of_objects.keys() and pdu.short_message != service_key:
         usr_obj = list_of_objects[str(pdu.source_addr)]
     else:
@@ -76,7 +76,7 @@ def response(client, msisdn=0, src_addr=0, usr_obj=0, user_message_reference=Non
     if srctext == "":
         usr_obj.level_up(0)
     elif srctext != "" and srctext != 'final':
-        if int(srctext) == 0:
+        if srctext == '0':
             usr_obj.level_down()
         else:
             usr_obj.level_up(srctext)
