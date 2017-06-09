@@ -43,7 +43,7 @@ def request(client, pdu):
         log.info('{}|{}|{}|{}'.format(str(pdu.source_addr), str(pdu.short_message), str(pdu.ussd_service_op), str(usr_obj.level)))
         response(client, pdu.source_addr, pdu.destination_addr, usr_obj, pdu.user_message_reference, pdu.short_message)
 
-    elif pdu.ussd_service_op is not None and (int(pdu.ussd_service_op) == 19 or int(pdu.ussd_service_op) == 33):
+    elif pdu.ussd_service_op is not None and int(pdu.ussd_service_op) == 19: #  or int(pdu.ussd_service_op) == 33)
         log.info('{}|{}|{}|{}'.format(str(pdu.source_addr), str(pdu.short_message), str(pdu.ussd_service_op), str(usr_obj.level)))
         log.info('Rejected by {}'.format(pdu.source_addr))
         response(client, pdu.source_addr, pdu.destination_addr, usr_obj, pdu.user_message_reference,
