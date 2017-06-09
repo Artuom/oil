@@ -10,7 +10,6 @@ import logging.handlers
 import re
 import sys
 import kannel_send_sms
-import sock_serv
 
 list_of_objects = []
 a = []
