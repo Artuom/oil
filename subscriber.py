@@ -145,7 +145,8 @@ class Subscriber:
                     except Exception as err:
                         log.info('error while actions request: {} for {}'.format(err.message, self.msisdn))
                         text = 'Net info po akciam. Poprobuite pozhe.'
-                sop = 0x03
+                #sop = 0x03
+                sop = 0x11
                 log.info('menu -> 2, level = {} {} is returned:\n{}'.format(self.level, self.msisdn, text))
                 return text, sop
                 # sms realization
@@ -174,7 +175,8 @@ class Subscriber:
                     except Exception as err:
                         log.info('error while actions request: {} for {}'.format(err.message, self.msisdn))
                         text = 'Net info po akciam. Poprobuite pozhe.'
-                sop = 0x03
+                #sop = 0x03
+                sop = 0x11
                 log.info('menu -> 3, level = {} {} is returned:\n{}'.format(self.level, self.msisdn, text))
                 return text, sop
 

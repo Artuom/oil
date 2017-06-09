@@ -45,11 +45,9 @@ def request(client, pdu):
 
     elif pdu.ussd_service_op is not None and (int(pdu.ussd_service_op) == 19 or int(pdu.ussd_service_op) == 33):
         log.info('{}|{}|{}|{}'.format(str(pdu.source_addr), str(pdu.short_message), str(pdu.ussd_service_op), str(usr_obj.level)))
-        if int(pdu.ussd_service_op) == 19 and pdu.velc_notif:
-            # '0x1120': 'Belorusneft'
-            log.info('Rejected by {}'.format(pdu.source_addr))
-            response(client, pdu.source_addr, pdu.destination_addr, usr_obj, pdu.user_message_reference,
-                     'final')
+        log.info('Rejected by {}'.format(pdu.source_addr))
+        response(client, pdu.source_addr, pdu.destination_addr, usr_obj, pdu.user_message_reference,
+                 'final')
         usr_obj.__del__()
         try:
             del list_of_objects[str(pdu.source_addr)]
@@ -78,6 +76,10 @@ def response(client, msisdn=0, src_addr=0, usr_obj=0, user_message_reference=Non
             usr_obj.level_down()
         else:
             usr_obj.level_up(srctext)
+    #elif srctext == 'finalaze':
+    #   text = ''
+    #    ussd_service_op = 0x20
+    #    ussd_submit.submit(client, msisdn, src_addr, ussd_service_op, user_message_reference, text)
     elif srctext == 'final':
         text = ''
         ussd_service_op = 0x20
