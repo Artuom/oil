@@ -136,12 +136,12 @@ class Subscriber:
                     # sms
                     try:
                         text_to_sms = db_interaction.actions_sms()
-                        import socket
-                        sock = socket.socket()
-                        sock.connect(('localhost', 8989))
-                        sock.send(str(self.msisdn) + ';' + str(text_to_sms) + ';' + str(logname))
-                        sock.close()
-                        # kannel_send_sms.send_sms(self.msisdn, text_to_sms, logname)
+                        #import socket
+                        #sock = socket.socket()
+                        #sock.connect(('localhost', 8989))
+                        #sock.send(str(self.msisdn) + ';' + str(text_to_sms) + ';' + str(logname))
+                        #sock.close()
+                        kannel_send_sms.send_sms(self.msisdn, text_to_sms, logname)
                     except Exception as err:
                         log.info('error in sending sms level 02 => {}'.format(err))
 
@@ -150,8 +150,8 @@ class Subscriber:
                     except Exception as err:
                         log.info('error while actions request: {} for {}'.format(err.message, self.msisdn))
                         text = 'Net info po akciam. Poprobuite pozhe.'
-                #sop = 0x03
-                sop = 0x11
+                sop = 0x03
+                # sop = 0x11
                 log.info('menu -> 2, level = {} {} is returned:\n{}'.format(self.level, self.msisdn, text))
                 return text, sop
                 # sms realization
@@ -172,12 +172,12 @@ class Subscriber:
                 else:
                     try:
                         text_to_sms = db_interaction.prices_sms()
-                        import socket
-                        sock = socket.socket()
-                        sock.connect(('localhost', 8989))
-                        sock.send(str(self.msisdn) + ';' + str(text_to_sms) + ';' + str(logname))
-                        sock.close()
-                        #kannel_send_sms.send_sms(self.msisdn, text_to_sms, logname)
+                        #import socket
+                        #sock = socket.socket()
+                        #sock.connect(('localhost', 8989))
+                        #sock.send(str(self.msisdn) + ';' + str(text_to_sms) + ';' + str(logname))
+                        #sock.close()
+                        kannel_send_sms.send_sms(self.msisdn, text_to_sms, logname)
                     except Exception as err:
                         log.info('error in sending sms level 03 => {}'.format(err))
                     try:
@@ -185,8 +185,8 @@ class Subscriber:
                     except Exception as err:
                         log.info('error while actions request: {} for {}'.format(err.message, self.msisdn))
                         text = 'Net info po akciam. Poprobuite pozhe.'
-                #sop = 0x03
-                sop = 0x11
+                sop = 0x03
+                # sop = 0x11
                 log.info('menu -> 3, level = {} {} is returned:\n{}'.format(self.level, self.msisdn, text))
                 return text, sop
 
