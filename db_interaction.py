@@ -86,7 +86,7 @@ def buyprize(card_number, lot_id):
 
 def current_lots():
     global unsuccessCount
-    prize_dict = {1: {u'prizenum': u'1', u'prizename': u'FORD EcoSport (Trend)', u'prizecost': u'500'}, 2: {u'prizenum': u'2', u'prizename': u'Kruiz po stranam Karibskogo morya', u'prizecost': u'500'}, 3: {u'prizenum': u'3', u'prizename': u'Zapravka do polnogo baka', u'prizecost': u'0'}}
+    prize_dict = {1: {u'prizenum': u'1', u'prizename': u'FORD EcoSport (Trend)', u'prizecost': u'500'}, 2: {u'prizenum': u'2', u'prizename': u'Kruiz po stranam Karibskogo morya', u'prizecost': u'500'}}
     return prize_dict
 
 

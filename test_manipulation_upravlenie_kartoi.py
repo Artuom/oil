@@ -55,32 +55,16 @@ print '='*10"""
 
 sub = subscriber.Subscriber('375259092515')
 sub.level_up(0)
-sub.level_up(1)
+sub.level_up('1')
 print sub.level
 print sub.answer_text()[0]
 print '\n'
 
-sub.level_up(5)
+sub.level_up(99999)
 
-print 'Vveli 5(Nevernoe)=>\n'
+print 'Vveli 4(Nevernoe)=>\n'
 print sub.answer_text()[0]
 print '='*10
 
 
 
-sub = subscriber.Subscriber('375259092515')
-sub.level_up(0)
-sub.level_up(1)
-print sub.level
-print sub.answer_text()[0]
-print '\n'
-
-sub.level_up(3)
-sub.level_up(1)
-sub.level_up(2)
-
-print sub.level
-
-print 'Vveli 1=>\n'
-print sub.answer_text()[0]
-print '='*10

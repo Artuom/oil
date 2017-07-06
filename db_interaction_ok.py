@@ -117,6 +117,12 @@ def current_lots():
         if lots_list == 'none':
             prize_dict = None
         else:
+            # deleting prizenum == 3
+            ind = 0
+            for i in lots_list:
+                if int(i['prizenum']) == 3:
+                    ind = lots_list.index(i)
+            del lots_list[ind]
             prize_dict = dict(enumerate(lots_list, 1))
         log.info('{}'.format(prize_dict))
         return prize_dict

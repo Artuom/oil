@@ -49,6 +49,12 @@ class Subscriber:
         return text, sop
 
     def level_up(self, level):
+        try:
+            int(level)
+            if len(str(level)) > 1:
+                level = str(level)[0]
+        except ValueError:
+            level = '9'
         if len(self.level) == 3 and int(level) != 1:
             self.level += str(1) + str(int(level) - 1)
         elif len(self.level) == 6:
@@ -90,7 +96,7 @@ class Subscriber:
         card_info = db_interaction.card_information(id)
 
     def answer_text(self):
-        text = None
+        global text
         sop = 0x03
         # first request
         # *xxx#
@@ -220,6 +226,10 @@ class Subscriber:
                     text = 'Na karte {} ballov\n1. Podrobnaya info po karte\n2. Priobresti shans na priz 1(x500)\n3. ' \
                            'Priobresti shans na priz 2(x500)\n0 - Nazad'.format(card['score'])
                     sop = 0x02
+            except (ValueError,  KeyError, IndexError) as err:
+                self.level_down(self.level[:-1])
+                text = ('Neverniy vvod!\n' + self.answer_text()[0])[:160]
+                sop = 0x02
             except Exception as err:
                 text = 'Unknown error. Try later.'
                 log.info('error in card selection while level = {}. {}'.format(self.level, err.message))
@@ -263,8 +273,8 @@ class Subscriber:
                            '\nShansi priz 2: {second_count}\n'.format(
                         disc=discount, first_count=count1, second_count=count2, **json_card_info)
                 else:
-                    text = 'Skidka {disc}%\nPriobr. soput.tovarov: {goods}rub\nBalli: {score}\nShansi priz 1: {first_count}' \
-                          '\nShansi priz 2: {second_count}\n1.Priobresti shans na priz 1\n2.Priobresti shans na priz 2'.format(
+                    text = 'Skidka {disc}%\nPriobr. soput.tovarov: {goods}rub\nBalli: {score}\nShansi:\npriz 1: {first_count}' \
+                          '\npriz 2: {second_count}\n1.Priobresti shans na priz 1\n2.Priobresti shans na priz 2'.format(
                         disc=discount, first_count=count1, second_count=count2, **json_card_info)
                 sop = 0x02
 
@@ -286,7 +296,7 @@ class Subscriber:
                         if str(date) in daterange or self.prize_dict is None:
                             text, sop = self.error_msg()
                         else:
-                            text = 'Priobresti shans na priz {} - {}\n1. Da\n0. Net'.format(chance_id,
+                            text = 'Priobresti shans na priz {} - {}, x500 ballov?\n1. Da\n0. Net'.format(chance_id,
                                 self.prize_dict[int(chance_id)]['prizename'])
                             sop = 0x02
                     except Exception as err:
@@ -296,6 +306,7 @@ class Subscriber:
             except KeyError:
                 self.level_down(self.level[:-1])
                 text = ('Neverniy vvod!\n' + self.answer_text()[0])[:160]
+                print len(text)
                 sop = 0x02
 
 
@@ -303,6 +314,7 @@ class Subscriber:
             request_card_id = int(self.level[2])
             chance_id = int(self.level[4])  # 1 - info po karte, 2,3,4 cifri vibora = 1,2,3 id shansa
             change_result = 0
+
             if int(self.level[5]) == 1:
                 try:
                     json_buy_result = db_interaction.buyprize(self.subscriber_cards_dict[request_card_id]['cardcode'], chance_id)
@@ -314,8 +326,8 @@ class Subscriber:
                     sop = 0x03
                 elif change_result == 0 and json_buy_result['buyresult'] != '1':
                     self.subscriber_cards_dict = db_interaction.msisdn_cards(self.msisdn)
-                    text = 'Vi priobreli shans na priz {} {}\nPriobresti esche shans?\n1. Da, na priz 1\n2. Da, na priz ' \
-                           '2'.format(json_buy_result['prizenum'], self.prize_dict[int(
+                    text = 'Vi priobreli shans na priz {} {}\nPriobresti esche shans?\n1. Da, na priz 1(x500)\n2. Da, na priz ' \
+                           '2(x500)'.format(json_buy_result['prizenum'], self.prize_dict[int(
                         json_buy_result['prizenum'])]['prizename'])
                     sop = 0x02
                 elif change_result == 0 and json_buy_result['buyresult'] == '1':
@@ -325,9 +337,13 @@ class Subscriber:
                 else:
                     text = 'Unknown error. Please, try later!'
                     sop = 0x03
-            else:
+            elif int(self.level[5]) == 0:
                 text = "Otmeneno pol'zovatelem"
                 sop = 0x03
+            else:
+                self.level_down(self.level[:-1])
+                text = ('Neverniy vvod!\n' + self.answer_text()[0])[:160]
+                sop = 0x02
         log.info('level: {} {} is returned the text:\n{}\nsop: {}'.format(self.level, self.msisdn, text, sop))
         return text, sop
 
