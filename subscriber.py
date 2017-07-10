@@ -20,8 +20,8 @@ logname = re.findall(r'_(\w+)\.py', sys.argv[0])[0]  # ussd_[life, mts, velcom].
 # logging block
 log = logging.getLogger('subscriber')
 log.setLevel(logging.INFO)
-# logfile = 'logs/{}_subscr.log'.format(logname)
-logfile = '{}_subscr.log'.format(logname)
+logfile = 'logs/{}_subscr.log'.format(logname)
+# logfile = '{}_subscr.log'.format(logname)
 hand = logging.handlers.TimedRotatingFileHandler(logfile, when='midnight', interval=1)
 hand.setFormatter(logging.Formatter('%(levelname)-8s [%(asctime)s] %(message)s'))
 log.addHandler(hand)
