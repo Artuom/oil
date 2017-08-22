@@ -20,8 +20,8 @@ logname = re.findall(r'_(\w+)\.py', sys.argv[0])[0]  # ussd_[life, mts, velcom].
 # logging block
 log = logging.getLogger('subscriber')
 log.setLevel(logging.INFO)
-logfile = 'logs/{}_subscr.log'.format(logname)
-# logfile = '{}_subscr.log'.format(logname)
+# logfile = 'logs/{}_subscr.log'.format(logname)
+logfile = '{}_subscr.log'.format(logname)
 hand = logging.handlers.TimedRotatingFileHandler(logfile, when='midnight', interval=1)
 hand.setFormatter(logging.Formatter('%(levelname)-8s [%(asctime)s] %(message)s'))
 log.addHandler(hand)
@@ -227,7 +227,10 @@ class Subscriber:
                            'Priobresti shans na priz 2(x500)\n0 - Nazad'.format(card['score'])
                     sop = 0x02
             except (ValueError,  KeyError, IndexError) as err:
-                self.level_down(self.level[:-1])
+                if self.subscriber_cards_dict == 1:
+                    self.level_down(self.level[:-2])
+                else:
+                    self.level_down(self.level[:-1])
                 text = ('Neverniy vvod!\n' + self.answer_text()[0])[:160]
                 sop = 0x02
             except Exception as err:
@@ -280,7 +283,9 @@ class Subscriber:
 
             else:
                 # self.level_up('1')
-                self.level_up(answer - 1)
+                self.level_up(answer - 1) # if not info check - moving to next step(buying) with answer -1
+                self.level = 'x'+self.level[1:]
+                print self.level
 
         elif len(self.level) == 5:
             # 01xyz
@@ -304,11 +309,12 @@ class Subscriber:
                         sop = 0x03
                         log.info('error: {}, msisdn: {}, level: {}'.format(err.message, self.msisdn, self.level))
             except KeyError:
-                self.level_down(self.level[:-1])
+                if len(self.subscriber_cards_dict) == 1 and self.level[0] is 'x':
+                    self.level_down(self.level[:-2])
+                else:
+                    self.level_down(self.level[:-1])
                 text = ('Neverniy vvod!\n' + self.answer_text()[0])[:160]
-                print len(text)
                 sop = 0x02
-
 
         elif len(self.level) == 6:
             request_card_id = int(self.level[2])

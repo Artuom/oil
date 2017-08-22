@@ -60,11 +60,8 @@ print sub.level
 print sub.answer_text()[0]
 print '\n'
 
-sub.level_up(99999)
-
-print 'Vveli 4(Nevernoe)=>\n'
+sub.level_up('3')
+print sub.level
 print sub.answer_text()[0]
-print '='*10
-
-
+print '\n'
 
