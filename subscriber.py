@@ -56,7 +56,8 @@ class Subscriber:
         except ValueError:
             level = '9'
         if len(self.level) == 3 and int(level) != 1:
-            self.level += str(1) + str(int(level) - 1)
+            # self.level += str(1) + str(int(level) - 1)
+            self.level = 'x' + self.level[1:] + str(1) + str(int(level) - 1)
         elif len(self.level) == 6:
             self.level = self.level[:-2] + str(level)
         else:
@@ -285,7 +286,6 @@ class Subscriber:
                 # self.level_up('1')
                 self.level_up(answer - 1) # if not info check - moving to next step(buying) with answer -1
                 self.level = 'x'+self.level[1:]
-                print self.level
 
         elif len(self.level) == 5:
             # 01xyz

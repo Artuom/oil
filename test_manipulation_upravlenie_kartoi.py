@@ -60,8 +60,8 @@ print sub.level
 print sub.answer_text()[0]
 print '\n'
 
-sub.level_up('3')
+
+sub.level_up('1')
 print sub.level
 print sub.answer_text()[0]
 print '\n'
-
